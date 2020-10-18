@@ -1,4 +1,4 @@
-local exec = require('shell').exec
+local exec = require('shell').execute
 
 -- Daemons list
 local daemonsToActivate = {
