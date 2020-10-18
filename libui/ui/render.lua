@@ -113,8 +113,8 @@ function render(elem, style, x, y, registerEvent)
       gpu.setForeground(getHexaColor(style.color))
       gpu.setBackground(getHexaColor(style.backgroundColor))
       gpu.fill(x, y, prev.width, prev.height, ' ')
-      gpu.setForeground(defaultStyle.color)
-      gpu.setBackground(defaultStyle.backgroundColor)
+      gpu.setForeground(stateStyle.color)
+      gpu.setBackground(stateStyle.backgroundColor)
     end
 
     if e then
