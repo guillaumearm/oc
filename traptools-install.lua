@@ -14,8 +14,5 @@ for k, v in pairs(daemonsToActivate) do
   exec('rc ' .. v .. ' enable')
 end
 
--- Cleanup
-exec('rm -f /usr/bin/traptools-install.lua')
-
 -- Reboot computer
 exec('reboot')
