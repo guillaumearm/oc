@@ -8,7 +8,6 @@ started = false
 local setRedstoneThreshold = function()
   if c.isAvailable('redstone') and c.redstone.getWakeThreshold() <= 0 then
     c.redstone.setWakeThreshold(1);
-    print("> Redstone card: wake threshold set to 1")
   end
 end
 
