@@ -1,0 +1,12 @@
+alias la="ls -la"
+alias c="clear"
+alias vi="edit"
+alias vim="edit"
+alias services="service list"
+
+alias poweroff="shutdown"
+alias halt="shutdown"
+
+alias debug_network="cat /var/log/network.log"
+alias debug_router="cat /var/log/router.log"
+alias debug_all="cat /var/log/*.log"
