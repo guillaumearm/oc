@@ -1,5 +1,8 @@
 local exec = require('shell').execute
 
+-- init global utils
+exec('/boot/11_global_utils');
+
 -- Daemons list
 local daemonsToActivate = {
   "media",
