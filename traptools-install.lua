@@ -12,7 +12,6 @@ local daemonsToActivate = {
 -- Activate all listed daemons
 for k, v in pairs(daemonsToActivate) do
   exec('rc ' .. v .. ' enable')
-  exec('rc ' .. v .. ' start')
 end
 
 -- Cleanup
