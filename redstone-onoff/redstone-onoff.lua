@@ -1,7 +1,6 @@
 local computer = require('computer')
 local c = require('component')
 local event = require('event')
-local filesystem = require('filesystem')
 local log = require('log')('redstone-onoff')
 
 started = false
@@ -16,7 +15,7 @@ function start()
   if started then return; end
   log.clean()
 
-  if not c.redstone.getWakeThreshold() then
+  if c.redstone.getWakeThreshold() <= 0 then
     c.redstone.setWakeThreshold(1);
     print("> Redstone card: wake threshold set to 1")
   end
