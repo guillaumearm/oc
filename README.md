@@ -3,6 +3,6 @@
 ## How to install
 
 ```
-oppm register guillaumeaarm/oc
+oppm register guillaumearm/oc
 oppm install -f traptools
 ```
