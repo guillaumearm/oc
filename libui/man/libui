@@ -5,18 +5,7 @@ local c = require('component')
 
 ------------------------------------------------------------------------------------------------
 
-local cb = function(fn, ...)
-  local args = pack(...)
-  return function()
-    return fn(unpack(args))
-  end
-end
-
 local beep = c.computer.beep
-
-------------------------------------------------------------------------------------------------
-
-
 
 ------------------------------------------------------------------------------------------------
 
@@ -24,7 +13,9 @@ local Button = ui(function(n, actionToDispatch)
   actionToDispatch = actionToDispatch or 'noop'
   local text = String(n)
   return {
-    onClick=cb(dispatch, actionToDispatch),
+    onClick=function(e)
+      dispatch(actionToDispatch, e)
+    end,
     style={ color=0x00BE00 },
     content={
       {string.rep('-', length(text) + 8)},
