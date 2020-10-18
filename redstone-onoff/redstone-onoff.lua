@@ -14,8 +14,13 @@ end)
 
 function start()
   if started then return; end
-  log.clean()    
+  log.clean()
 
+  if not c.redstone.getWakeThreshold() then
+    c.redstone.setWakeThreshold(1);
+    print("> Redstone card: wake threshold set to 1")
+  end
+  
   event.listen('redstone_changed', handleRedstoneChanged)
 
   started = true
