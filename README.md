@@ -8,6 +8,18 @@ oppm install -f traptools
 traptools-install
 ```
 
+## Uninstall
+
+```
+traptools-uninstall
+```
+
+## Update
+
+```
+traptools-update
+```
+
 ## Global utils
 
 TODO 1: write a full documentation for this
