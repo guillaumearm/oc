@@ -8,7 +8,7 @@ local setboot = String(true)
 
 local data = '{ label="'.. label ..'", setlabel='.. setlabel ..', reboot='.. reboot ..', setboot='.. setboot ..' }'
 
-fse.writeFile('/.props', data)
+fse.writeFile('/.prop', data)
 
 require('shell').execute('label / "'.. label ..'"')
 
