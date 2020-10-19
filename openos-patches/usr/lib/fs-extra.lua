@@ -33,7 +33,7 @@ fse.writeFile = function(path, data, mode)
   end 
 
   file:close()
-  return true  
+  return true
 end
 
 fse.appendFile = function(path, data)
