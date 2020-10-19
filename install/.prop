@@ -1,0 +1,6 @@
+{
+  label="TrapTools 1.11.0",
+  setlabel=true,
+  setboot=true,
+  reboot=false
+}

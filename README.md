@@ -1,10 +1,25 @@
 # OpenComputers programs
 
-## How to install
+## How to install on your current OS
 
 ```
 oppm register guillaumearm/oc
-oppm install -f traptools
+oppm install -f traptools /
+traptools-install
+```
+
+## How to install on a disk
+
+```
+oppm register guillaumearm/oc
+oppm install traptools /mnt/mydisk
+label /mnt/mydisk "TrapTools"
+```
+
+## Install using a disk
+
+```
+install
 traptools-install
 ```
 
