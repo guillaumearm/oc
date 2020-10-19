@@ -425,7 +425,11 @@ _G.updateNonNilPath = nil
 
 _G.propCompare = nil
 _G.pathCompare = nil
-_G.propEq = nil
+
+_G.propEq = curryN(3, function(k, v, t)
+  return equals(v, prop(k, t))
+end)
+
 _G.pathEq = nil
 _G.propIdentical = nil
 _G.pathIdentical = nil
