@@ -1,4 +1,4 @@
-local osversion = require('/OSVERSION')
+local osversion = loadfile('/OSVERSION')()
 local fse = require('fs-extra')
 
 local label = osversion;
