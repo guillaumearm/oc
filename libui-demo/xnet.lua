@@ -21,7 +21,15 @@ local RefreshButton = pipe(
   defaultTo('[ default button text ]'),
   Raw,
   withBackgroundColor('gray'),
-  withClick(stop)
+  withClick('refresh')
+)
+
+local ExitButton = pipe(
+  defaultTo('X'),
+  Raw,
+  withBackgroundColor('red'),
+  withColor('black'),
+  withClick(stopUI)
 )
 
 local HeaderBar =  function(props)
@@ -33,10 +41,10 @@ local HeaderBar =  function(props)
   )(props.title)
 end
 
-local Header = ui(ui(function(headerTitle)
-  local buttonElement = Raw(RefreshButton('[ Refresh ]'));
-  return Raw(horizontal(buttonElement, HeaderBar({ title=headerTitle, buttonLength=buttonElement.width })));
-end))
+local Header = function(headerTitle)
+  local buttons = horizontal(RefreshButton('[ Refresh ]'), ExitButton())
+  return horizontal(buttons, HeaderBar({ title=headerTitle, buttonLength=buttons.width }));
+end
 
 local Button = ui(function(n, actionToDispatch)
   actionToDispatch = actionToDispatch or 'noop'

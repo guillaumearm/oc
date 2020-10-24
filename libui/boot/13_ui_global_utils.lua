@@ -77,15 +77,11 @@ end)
 --------------------------------
 
 _G.dispatch = function(...)
-  return event.push('ui', ...)
+  event.push('ui', ...)
 end
 
-_G.click = function(type, ...)
-  type = type or ''
-  local payload = pack(...)
-  return function(e)
-    return type, unpack(payload), e
-  end
+_G.stopUI = function()
+  dispatch(stop)
 end
 
 --------------------------------

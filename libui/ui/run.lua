@@ -38,6 +38,11 @@ function runUI(view, reducer, handler, ...)
     newHandlers = {}
   end
 
+  local resetScreen = function()
+    render(nil)
+    gpu.setResolution(originalScreenWidth, originalScreenHeight)
+  end
+
   handlers = newHandlers
   newHandlers = {}
 
@@ -55,9 +60,11 @@ function runUI(view, reducer, handler, ...)
       end
     end
 
-    if eName == 'interrupted' then
-      render(nil)
-      gpu.setResolution(originalScreenWidth, originalScreenHeight)
+    local secondArg = ...
+    local shouldStop = eName == 'ui' and secondArg == stop
+
+    if eName == 'interrupted' or shouldStop then
+      resetScreen()
     end
 
     if eName == 'touch' then
