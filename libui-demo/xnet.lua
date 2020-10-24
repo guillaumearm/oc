@@ -1,5 +1,4 @@
 local runUI = import('ui/run')
-local colors = require('colors')
 local c = require('component')
 
 ------------------------------------------------------------------------------------------------
@@ -21,7 +20,7 @@ local maxWidth = listWidth * 2
 local RefreshButton = pipe(
   defaultTo('[ default button text ]'),
   Raw,
-  withBackgroundColor(colors.grey),
+  withBackgroundColor('gray'),
   withClick('refresh')
 )
 
@@ -46,7 +45,7 @@ local Button = ui(function(n, actionToDispatch)
     onClick=function(e)
       return actionToDispatch, e
     end,
-    style={ color=colors.silver },
+    style={ color='silver' },
     content={
       {string.rep('-', length(text) + 8)},
       {'--- ', text, ' ---'},
