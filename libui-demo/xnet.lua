@@ -24,13 +24,15 @@ local RefreshButton = pipe(
   withClick('refresh')
 )
 
-local ExitButton = pipe(
-  defaultTo('X'),
-  Raw,
-  withBackgroundColor('red'),
-  withColor('black'),
-  withClick(stopUI)
-)
+local ExitButton = function(x)
+  return pipe(
+    defaultTo('X'),
+    Raw,
+    withBackgroundColor('red'),
+    withColor('black'),
+    withClick(stopUI)
+  )(x)
+end
 
 local HeaderBar =  function(props)
   props = props or {}
@@ -42,7 +44,7 @@ local HeaderBar =  function(props)
 end
 
 local Header = function(headerTitle)
-  local buttons = horizontal(RefreshButton('[ Refresh ]'), ExitButton())
+  local buttons = horizontal(ExitButton(), RefreshButton('[ Refresh ]'))
   return horizontal(buttons, HeaderBar({ title=headerTitle, buttonLength=buttons.width }));
 end
 
