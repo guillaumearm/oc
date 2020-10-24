@@ -21,7 +21,7 @@ local maxWidth = listWidth * 2
 local RefreshButton = pipe(
   defaultTo('[ default button text ]'),
   Raw,
-  withBackgroundColor(colors.gray),
+  withBackgroundColor(colors.grey),
   withClick('refresh')
 )
 
@@ -34,12 +34,12 @@ local HeaderBar =  function(props)
   )(props.title)
 end
 
-local Header = function(headerTitle)
-  local buttonElement = RefreshButton('[ Refresh ]');
-  return Raw(horizontal(RefreshButton(), HeaderBar({ title=headerTitle, buttonLength=buttonElement.width })));
-end
+local Header = ui(ui(function(headerTitle)
+  local buttonElement = Raw(RefreshButton('[ Refresh ]'));
+  return Raw(horizontal(buttonElement, HeaderBar({ title=headerTitle, buttonLength=buttonElement.width })));
+end))
 
-local Button = ui(ui(function(n, actionToDispatch)
+local Button = ui(function(n, actionToDispatch)
   actionToDispatch = actionToDispatch or 'noop'
   local text = String(n)
   return {
@@ -53,7 +53,7 @@ local Button = ui(ui(function(n, actionToDispatch)
       {string.rep('-', length(text) + 8)}
     }
   }
-end));
+end);
 
 ------------------------------------------------------------------------------------------------
 
