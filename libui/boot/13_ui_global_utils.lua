@@ -160,3 +160,5 @@ _G.captureAction = curryN(2, function(predicate, handler)
     return Boolean(eventName == 'ui' and predicate(...))
   end, handler)
 end)
+
+_G.captureOnStop = captureAction('@stop')

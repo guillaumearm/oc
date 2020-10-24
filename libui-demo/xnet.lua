@@ -1,4 +1,3 @@
-local runUI = import('ui/run')
 local c = require('component')
 
 ------------------------------------------------------------------------------------------------
@@ -17,14 +16,7 @@ local maxWidth = listWidth * 2
 
 ------------------------------------------------------------------------------------------------
 
-local RefreshButton = pipe(
-  defaultTo('[ default button text ]'),
-  Raw,
-  withBackgroundColor('gray'),
-  withClick('refresh')
-)
-
-local createButtonApi = function(name, text)
+local createButtonComponent = function(name, text)
   name = name or 'button'
   text = text or 'BUTTON TEXT'
 
@@ -37,8 +29,7 @@ local createButtonApi = function(name, text)
   }))
 
   local View = function(state)
-    return applyTo(text)(pipe(
-      Raw,
+    return applyTo(Raw(text))(pipe(
       ternary(state, withBackgroundColor('white'), identity),
       ternary(state, withColor('black'), identity),
       -- withBackgroundColor('red'),
@@ -63,7 +54,7 @@ local createButtonApi = function(name, text)
   }
 end
 
-local buttonApi = createButtonApi('button-refresh', 'Refresh')
+local buttonComponent = createButtonComponent('button-refresh', 'Refresh')
 
 local ExitButton = function(x)
   return pipe(
@@ -85,67 +76,26 @@ local HeaderBar =  function(props)
 end
 
 local Header = function(headerTitle, refreshButtonState)
-  local buttons = horizontal(ExitButton(), buttonApi.View(refreshButtonState))
+  local buttons = horizontal(ExitButton(), buttonComponent.View(refreshButtonState))
   return horizontal(buttons, HeaderBar({ title=headerTitle, buttonLength=buttons.width }));
 end
 
-local Button = ui(function(n, actionToDispatch)
-  actionToDispatch = actionToDispatch or 'noop'
-  local text = String(n)
-  return {
-    onClick=function(e)
-      return actionToDispatch, e
-    end,
-    style={ color='silver' },
-    content={
-      {string.rep('-', length(text) + 8)},
-      {'--- ', text, ' ---'},
-      {string.rep('-', length(text) + 8)}
-    }
-  }
-end);
 
 ------------------------------------------------------------------------------------------------
-
-local CounterApp = ui(function(state)
-  return {
-    content={
-      {Button('+', 'increment'), Button(state), Button('-', 'decrement')},
-      {Button('reset', 'reset')}
-    }
-  }
-end)
 
 local App = ui(function(state)
   return {
     content={
       { Header(' Here is the Header title ', state.refreshButton) },
-      { CounterApp(state.counter.value) }
     }
   }
 end)
 
 ------------------------------------------------------------------------------------------------
 
-local counterUpdater = withInitialState(0,
-  handleActions({
-    reset=always(always(0)),
-    increment=function(e)
-      if e.type == 1 then return add(10) end
-      return add(1)
-    end,
-    decrement=function(e)
-      if e.type == 1 then return add(-10) end
-      return add(-1)
-    end
-  })
-)
 
 local rootUpdater = combineUpdaters({
-  counter={
-    value=counterUpdater
-  },
-  refreshButton=buttonApi.updater
+  refreshButton=buttonComponent.updater
 })
 
 --------------------------------------------------------
@@ -153,36 +103,17 @@ local initHandler = captureAction('@init', function(prevState, state)
   beep()
 end)
 
-local incHandler = captureAction('increment', function() end)
-local decHandler = captureAction('decrement', function() end)
-local refreshHandler = captureAction('refresh', function() beep(); beep(); end)
-local resetHandler = captureAction('reset', function() beep() end)
-local terminatedHandler = captureEvent('interrupted', function() beep() end)
-
-local tickHandler = captureAction('tick', function(prevState, state)
- -- do something here
+local stopHandler = captureAction('@stop', function(prevState, state)
+  beep()
 end)
 
+local handler = pipeHandlers(initHandler, stopHandler)
+-----------------------------------------------------
 
-local mainHandler = pipeHandlers(
-  initHandler,
-  terminatedHandler,
-  tickHandler,
-  incHandler,
-  decHandler,
-  resetHandler,
-  refreshHandler
-)
---------------------------------------------------------
+local component = {
+  view=App,
+  handler=handler,
+  updater=rootUpdater
+}
 
-local rootView = App
-local rootHandler = mainHandler
-
-local intervalId = setInterval(function()
-  dispatch('tick')
-end, 5000)
-
-local ok, err = pcall(runUI, rootView, rootUpdater, rootHandler)
-if not ok then printErr(err) end
-
-clearInterval(intervalId)
+return component

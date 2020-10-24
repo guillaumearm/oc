@@ -66,6 +66,10 @@ function runUI(view, updater, handler, ...)
     local secondArg = ...
     local shouldStop = eName == 'ui' and secondArg == '@stop'
 
+    if eName == 'interrupted' then
+      eventApi.push('ui', '@stop')
+    end
+
     if eName == 'interrupted' or shouldStop then
       resetScreen()
     end
