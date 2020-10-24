@@ -90,14 +90,13 @@ local mainHandler = pipeHandlers(
 --------------------------------------------------------
 
 local rootView = App
-local rootReducer = toReducer(rootUpdater)
 local rootHandler = mainHandler
 
 local intervalId = setInterval(function()
   dispatch('tick')
 end, 5000)
 
-local ok, err = pcall(runUI, rootView, rootReducer, rootHandler)
+local ok, err = pcall(runUI, rootView, rootUpdater, rootHandler)
 if not ok then printErr(err) end
 
 clearInterval(intervalId)

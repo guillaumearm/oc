@@ -67,14 +67,13 @@ local counterUpdater = withInitialState(initialState,
 )
 
 local rootView = ReactorApp
-local rootReducer = toReducer(counterUpdater)
-local routHandler = nil
+local rootHandler = nil
 
 local intervalId = setInterval(function()
   dispatch('tick')
 end, 1000)
 
-local ok, err = pcall(runUI, rootView, rootReducer, rootHandler)
+local ok, err = pcall(runUI, rootView, counterUpdater, rootHandler)
 if not ok then printErr(err) end
 
 clearInterval(intervalId)

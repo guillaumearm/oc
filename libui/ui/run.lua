@@ -10,7 +10,7 @@ function isClicked(clickEvent)
   end
 end
 
-function runUI(view, reducer, handler, ...)
+function runUI(view, updater, handler, ...)
   handler = handler or noop
   local events = concat({ 'touch', 'ui' }, pack(...))
   local previousRenderedElement = nil
@@ -46,12 +46,15 @@ function runUI(view, reducer, handler, ...)
   handlers = newHandlers
   newHandlers = {}
 
-  local eventReducer = function(state, eName, ...)
-    if eName == 'ui' then return reducer(state, ...) end
-    return state
+  local eventUpdater = function(eName, ...)
+    if (eName == 'ui') then
+      return updater(...)
+    else
+      return identity
+    end
   end
 
-  return runEvents(events, eventReducer, function(prevState, state, eName, ...)
+  return runEvents(events, eventUpdater, function(prevState, state, eName, ...)
     if not (prevState == state) then
       local element = view(state)
       if not (previousRenderedElement == element) then

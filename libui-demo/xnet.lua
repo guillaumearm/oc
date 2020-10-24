@@ -24,6 +24,47 @@ local RefreshButton = pipe(
   withClick('refresh')
 )
 
+local createButtonApi = function(name, text)
+  name = name or 'button'
+  text = text or 'BUTTON TEXT'
+
+  local clickedAction = 'button-clicked/' .. name
+  local releasedAction = 'button-released/' .. name
+
+  local updater = withInitialState(false, handleActions({
+    [clickedAction]=function() return always(true) end,
+    [releasedAction]=function() return always(false) end
+  }))
+
+  local View = function(state)
+    applyTo(text)(pipe(
+      Raw,
+      ternary(state, withBackgroundColor('white'), identity),
+      ternary(state, withColor('black'), identity),
+      -- withBackgroundColor('red'),
+      -- withColor('black'),
+      withClick(ternary(state, noop, function()
+        dispatch(clickedAction)
+        setTimeout(function()
+          dispatch(releaseAction)
+        end, 100)
+      end))
+    ))
+  end
+
+
+  return {
+    updater=updater,
+    View=View,
+    actions={
+      clickedAction=clickedAction,
+      releasedAction=releasedAction
+    }
+  }
+end
+
+local buttonApi = createButtonApi('button-refresh', 'Refresh')
+
 local ExitButton = function(x)
   return pipe(
     defaultTo('X'),
@@ -43,8 +84,8 @@ local HeaderBar =  function(props)
   )(props.title)
 end
 
-local Header = function(headerTitle)
-  local buttons = horizontal(ExitButton(), RefreshButton('[ Refresh ]'))
+local Header = function(headerTitle, refreshButtonState)
+  local buttons = horizontal(ExitButton(), buttonApi.View(refreshButtonState))
   return horizontal(buttons, HeaderBar({ title=headerTitle, buttonLength=buttons.width }));
 end
 
@@ -78,7 +119,7 @@ end)
 local App = ui(function(state)
   return {
     content={
-      { Header(' Here is the Header title ') },
+      { Header(' Here is the Header title ', state.refreshButton) },
       { CounterApp(state.counter.value) }
     }
   }
@@ -103,7 +144,8 @@ local counterUpdater = withInitialState(0,
 local rootUpdater = combineUpdaters({
   counter={
     value=counterUpdater
-  }
+  },
+  refreshButton=buttonApi.updater
 })
 
 --------------------------------------------------------
@@ -134,14 +176,13 @@ local mainHandler = pipeHandlers(
 --------------------------------------------------------
 
 local rootView = App
-local rootReducer = toReducer(rootUpdater)
 local rootHandler = mainHandler
 
 local intervalId = setInterval(function()
   dispatch('tick')
 end, 5000)
 
-local ok, err = pcall(runUI, rootView, rootReducer, rootHandler)
+local ok, err = pcall(runUI, rootView, rootUpdater, rootHandler)
 if not ok then printErr(err) end
 
 clearInterval(intervalId)
