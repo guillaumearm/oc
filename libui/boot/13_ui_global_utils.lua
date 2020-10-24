@@ -50,7 +50,7 @@ _G.withClick = curryN(2, function(maybeFn, element)
 
   local onClick = function(...)
     if element.onClick then element.onClick(...) end
-    return fn(...)       
+    return fn(...)
   end
     return merge(element, { onClick=onClick })
 end)

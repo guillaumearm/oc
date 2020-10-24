@@ -118,14 +118,19 @@ end)
 _G.leftPad = _G.leftPadString
 _G.rightPad = _G.rightPadString
 
-_G.centerString = curryN(2, function(width, str)
+_G.centerStringWith = curryN(3, function (givenChar, width, str)
+  local firstChar = prop(1, givenChar)
   local totalPad = width - length(str);
   if totalPad < 1 then return str end
 
   local leftPad = math.floor(totalPad / 2)
   local rightPad = ternary(isOdd(totalPad), leftPad + 1, leftPad)
 
-  return string.rep(' ', leftPad) .. str .. string.rep(' ', rightPad)  
+  return string.rep(firstChar, leftPad) .. str .. string.rep(firstChar, rightPad);
+end)
+
+_G.centerString = curryN(2, function(width, str)
+  return centerStringWith(' ', width, str)
 end)
 
 _G.null = setmetatable({}, { __tostring=function() return "null" end })
