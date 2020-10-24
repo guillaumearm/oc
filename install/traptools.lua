@@ -1,4 +1,3 @@
-local shell = require('shell')
 local exec = require('shell').execute
 
 local firstArg = ...
@@ -23,14 +22,14 @@ local DAEMONS_TO_ACTIVATE = {
 -------------------------------------------------------------------------------
 
 
-local uninstall = function()
+local uninstallCommand = function()
   -- Uninstall all packages
   for k, v in pairs(PACKAGE_LIST) do
     exec('oppm uninstall ' .. v)
   end
 end
 
-local install = function()
+local initCommand = function()
   -- init global utils
   exec('/boot/11_global_utils');
 
@@ -38,10 +37,6 @@ local install = function()
   for k, v in pairs(DAEMONS_TO_ACTIVATE) do
     exec('rc ' .. v .. ' enable')
   end
-
-
-  -- Set path for demos
-  shell.setPath(shell.getPath() .. ":/bin/demo:/usr/bin/demo")
 
   -- Reboot computer
   exec('reboot')
@@ -62,9 +57,9 @@ end
 -------------------------------------------------------------------------------
 
 if firstArg == 'init' or firstArg == 'i' or firstArg == 'install' then
-  install()
+  initCommand()
 elseif firstArg == 'uninstall' then
-  uninstall()
+  uninstallCommand()
 else
   printUsage()
 end
