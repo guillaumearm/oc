@@ -37,7 +37,7 @@ local createButtonApi = function(name, text)
   }))
 
   local View = function(state)
-    applyTo(text)(pipe(
+    return applyTo(text)(pipe(
       Raw,
       ternary(state, withBackgroundColor('white'), identity),
       ternary(state, withColor('black'), identity),
@@ -46,7 +46,7 @@ local createButtonApi = function(name, text)
       withClick(ternary(state, noop, function()
         dispatch(clickedAction)
         setTimeout(function()
-          dispatch(releaseAction)
+          dispatch(releasedAction)
         end, 100)
       end))
     ))
