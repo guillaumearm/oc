@@ -6,6 +6,7 @@ local path = firstArg or '/'
 
 -- Reinstall traptools
 exec('traptools-uninstall')
+exec('sleep 4')
 exec('oppm install traptools ' .. path)
 
 if secondArg == '--install' then
