@@ -8,7 +8,10 @@ local path = firstArg or '/'
 exec('traptools-uninstall')
 exec('oppm install -f traptools ' .. path)
 
-if secondArg == '--reboot' then
+if secondArg == '--install' then
+  if path ~= '/' then
+    exec('install --fromDir ' .. path .. ' --toDir /')
+  end
   exec('traptools-install')
 end
 
