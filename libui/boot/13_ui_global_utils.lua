@@ -81,7 +81,7 @@ _G.dispatch = function(...)
 end
 
 _G.stopUI = function()
-  dispatch(stop)
+  dispatch('@stop')
 end
 
 --------------------------------

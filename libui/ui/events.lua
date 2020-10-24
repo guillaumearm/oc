@@ -23,7 +23,7 @@ function runEvents(events, reducer, handler)
     state = reducer(state, eName, unpack(restEventArgs))
     handler(prevState, state, eName, unpack(restEventArgs))
 
-    local shouldStop = eName == 'ui' and secondArg == stop
+    local shouldStop = eName == 'ui' and secondArg == '@stop'
     if eName == 'interrupted' or shouldStop then break; end
   end
 end

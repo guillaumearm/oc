@@ -61,7 +61,7 @@ function runUI(view, reducer, handler, ...)
     end
 
     local secondArg = ...
-    local shouldStop = eName == 'ui' and secondArg == stop
+    local shouldStop = eName == 'ui' and secondArg == '@stop'
 
     if eName == 'interrupted' or shouldStop then
       resetScreen()
