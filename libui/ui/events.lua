@@ -16,13 +16,15 @@ function runEvents(events, reducer, handler)
   while true do
     local eventArgs = pack(event.pullMultiple('interrupted', unpack(events)));
     local eName = head(eventArgs)
+    local secondArg = prop(2, eventArgs)
     local restEventArgs = tail(eventArgs)
 
     prevState = state
     state = reducer(state, eName, unpack(restEventArgs))
     handler(prevState, state, eName, unpack(restEventArgs))
 
-    if eName == 'interrupted' then break; end    
+    local shouldStop = eName == 'ui' and secondArg == stop
+    if eName == 'interrupted' or shouldStop then break; end
   end
 end
 

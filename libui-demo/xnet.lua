@@ -21,7 +21,7 @@ local RefreshButton = pipe(
   defaultTo('[ default button text ]'),
   Raw,
   withBackgroundColor('gray'),
-  withClick('refresh')
+  withClick(stop)
 )
 
 local HeaderBar =  function(props)
