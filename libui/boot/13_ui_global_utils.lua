@@ -22,7 +22,8 @@ _G.Raw = function(strOrElement)
 end
 
 _G.horizontal = function(...)
-  return uiWrapContent(compose(of, map(Raw, pack(...))))
+  local content = of(map(Raw, pack(...)))
+  return uiWrapContent(content)
 end
 
 _G.vertical = function(...)
