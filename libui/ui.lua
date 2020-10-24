@@ -7,7 +7,7 @@ function getElementDimensions(elem)
   return { width=elem.width, height=elem.height }
 end
 
-local getLineDimensions = reduce(function(state, elem)    
+local getLineDimensions = reduce(function(state, elem)
   local dim = getElementDimensions(elem)
 
   return {
@@ -17,9 +17,12 @@ local getLineDimensions = reduce(function(state, elem)
 end, { width=0, height=0 })
 
 function computeElementDimensions(elem)
+  if elem.height and elem.width then return elem end
+
   local state = { width=0, height=0 }
 
   local newLines = map(function(line)
+    line = line.content or line
     local lineDim = getLineDimensions(line)
 
     state.height = state.height + lineDim.height
