@@ -57,6 +57,7 @@ if isLegacyInstallCommand then
   firstArg = 'init'
   printErr('Warning: the "' .. firstArg .. '" command is deprecated')
   printErr('Prefer use "traptools init"')
+  exec('sleep 2')
 end
 -------------------------------------------------------------------------------
 
