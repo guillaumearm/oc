@@ -5,7 +5,7 @@
 ```
 oppm register guillaumearm/oc
 oppm install -f traptools /
-traptools-install
+traptools install
 ```
 
 ## How to install on a disk
@@ -20,19 +20,13 @@ label /mnt/mydisk "TrapTools"
 
 ```
 install
-traptools-install
+traptools install
 ```
 
 ## Uninstall
 
 ```
-traptools-uninstall
-```
-
-## Update
-
-```
-traptools-update
+traptools uninstall
 ```
 
 ## Global utils
