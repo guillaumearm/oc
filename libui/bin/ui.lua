@@ -1,5 +1,4 @@
 local os = require('os')
-local fse = require('fs-extra')
 local shell = require('shell')
 local runUI = require('ui/run')
 
@@ -8,8 +7,8 @@ local args = pack(...)
 local givenFileName = head(args)
 local restArgs = tail(args)
 
-local filePath = shell.resolve(givenFileName)
-local component, readErr = fse.readFile(filePath)
+local filePath = shell.resolve(givenFileName, 'lua')
+local component = loadfile(filePath)
 
 function printQuit(...)
   printErr(...)
