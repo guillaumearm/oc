@@ -7,7 +7,7 @@ alias see="$PAGER"
 
 alias vi="$EDITOR"
 alias vim="$EDITOR"
-alias e = "$EDITOR"
+alias e="$EDITOR"
 
 alias poweroff="shutdown"
 alias halt="shutdown"
