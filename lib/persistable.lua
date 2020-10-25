@@ -3,7 +3,7 @@ local fse = require('fs-extra')
 
 local PERSISTABLE_FOLDER = '/var/persistable/'
 
-local persistable = function(dbName, defaultValue)
+local persistable = function(dbName, defaultTable)
   local dbPath = fs.concat(PERSISTABLE_FOLDER, dbName)
 
   local dbReaded = false
@@ -13,8 +13,8 @@ local persistable = function(dbName, defaultValue)
   db.read = function()
     cache = fse.readTable(dbPath)
 
-    if not cache and defaultValue and not dbReaded then
-      cache = defaultValue
+    if not cache and defaultTable and not dbReaded then
+      cache = defaultTable
       cacheReaded = true
       fse.writeTable(dbPath, cache, math.huge)
     end
@@ -37,7 +37,7 @@ local persistable = function(dbName, defaultValue)
   end
 
   db.clean = function()
-    db.write(defaultValue)
+    db.write(defaultTable)
   end
 
   return db

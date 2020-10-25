@@ -12,7 +12,7 @@ local createLogger = function(loggerName, withStackTrace)
   end
 
   local log = {}
-  
+
   log.path = filesystem.concat(LOG_DIRECTORY, loggerName) .. '.' .. LOG_EXTENSION
 
   log.write = function(line)
@@ -25,7 +25,6 @@ local createLogger = function(loggerName, withStackTrace)
 
   log.wrap = function(fn)
     return function(...)
-      local args = pack(...)
       local resultArgs = nil
       if withStackTrace then
         resultArgs = pack(xpcall(fn, debug.traceback, ...))

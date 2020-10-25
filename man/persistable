@@ -1,0 +1,52 @@
+NAME
+  persistable
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Library that bring persisted tabled to a program (it's like a little db)
+  Warning! it does not handle concurrence, one running program = one persistable
+  You can still run several different persistable in parallel (with a different name)
+
+USAGE
+  local persistable = require('persistable')
+
+API
+  persistable(name, defaultTable) => PersistableAPI
+  PersistableAPI = {
+    --  get the in-memory cache (optimized because no io)
+    get = () => table
+
+    -- update the in-memory cache + the persisted one
+    write = (table) => (boolean, error)
+
+    -- similar to `write(defaultTable)`
+    clean = () => (boolean, error)
+
+    -- Warning! deprecated
+    -- read filesystem to get the persisted table (or write `defaultTable` if file is not found)
+    read = () => table
+
+    -- Warning! deprecated
+    --  an alias for `read` method
+    reload = read
+  }
+
+
+EXAMPLES
+  local persistable = require('persistable')
+
+  local db = persistable('an-uniq-name-related-to-the-program', { n=0 })
+  print(db.get().n == 0)
+
+  db.write({ counter=42 })
+  print(db.get().n == 42)
+
+  -- this is optimized because it never access to the filesystem
+  for i = 1, 10000 do
+    db.get().n -- 42
+  end
+
+  -- un-optimized because the file is read again, but it can deal with concurrence
+  db.read()

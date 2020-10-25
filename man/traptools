@@ -16,8 +16,8 @@ AVAILABLE PACKAGES (the `*` means there is no manual entry for this package)
   libui *
   libui-demo *
   fs-extra
-  persistable *
-  liblog *
+  persistable
+  liblog
   wd *
   media *
   redstone-onoff *

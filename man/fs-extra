@@ -7,6 +7,9 @@ AUTHOR
 DESCRIPTION
   Library that provides some filesystem utilities for OpenOS
 
+USAGE
+  local fse = require('fs-extra')
+
 API
   readFile(path) => (data | nil, error)
   writeFile(path, data, mode?) => (boolean, error)
@@ -15,10 +18,10 @@ API
   writeTable(path, table, prettyOutput) => (boolean, error)
 
 EXAMPLES
-  writeFile('/tmp/a-string', 'Hello World');
-  local str = readFile('/tmp/a-string');
+  fse.writeFile('/tmp/a-string', 'Hello World');
+  local str = fse.readFile('/tmp/a-string');
   print(str) -- 'Hello World'
 
-  writeTable('/tmp/a-table', { firstWord="Hello", secondWord="World" });
-  local t = readTable('/tmp/a-table');
+  fse.writeTable('/tmp/a-table', { firstWord="Hello", secondWord="World" });
+  local t = fse.readTable('/tmp/a-table');
   print(t.firstWord .. " " .. t.secondWord) -- 'Hello World'

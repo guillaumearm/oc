@@ -1,0 +1,39 @@
+NAME
+  liblog
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+
+
+USAGE
+  -- the log file will be saved in /var/log/my-logger.log
+  local logger = require('log')('my-logger')
+
+  -- stacktraces will be added to the logs when using `wrap` method
+  local loggerWithStackTrace = require('log')('my-logger', true)
+
+API
+  -- the absolute path of the log file
+  path: string
+
+  -- add a line to the concerned log file
+  write(string) => (boolean, error)
+
+  -- clean the concerned log file
+  clean() => (boolean, error)
+
+  -- enhance a function to log throwed errors
+  wrap(function) => functiom
+
+EXAMPLES
+  -- How to monitor daemon errors
+
+  local event = require('event')
+  local log = require('log')('mytest')
+
+  event.listen('component_available', log.wrap(function()
+    local x = nil
+    print(x.y.z + x.y.z) -- error: `y` of nil should be logged in the file
+  end))
