@@ -5,7 +5,7 @@ AUTHOR
   trapcodien
 
 DESCRIPTION
-
+  Simple utitlies to persist logs
 
 USAGE
   -- the log file will be saved in /var/log/my-logger.log

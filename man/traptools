@@ -7,10 +7,10 @@ AUTHOR
 DESCRIPTION
   A collection of oppm packages tools designed for OpenOS 1.7.5
 
-  You can use the `man` command in your terminal with any available package
-  For example, `man global-utils`, `man libui` or even `man libui-demo`
+  You can use the "man" command in your terminal with any available package
+  For example, "man global-utils", "man libui" or even "man libui-demo"
 
-AVAILABLE PACKAGES (the `*` means there is no manual entry for this package)
+AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   openos-patches
   global-utils *
   libui *
@@ -24,14 +24,14 @@ AVAILABLE PACKAGES (the `*` means there is no manual entry for this package)
 
 
 Uninstall
-  `traptools uninstall`
+  "traptools uninstall"
 
   It should be used for regular system installations only,
   it restores system files needed by OpenOS
-  i.e. `oppm install -f traptools /`
+  i.e. "oppm install -f traptools /"
 
 Hard Uninstall
-  `traptools uninstall --hard`
+  "traptools uninstall --hard"
 
   It should be used for dedicated disk installations only,
   it prevents to restore files for the host machine

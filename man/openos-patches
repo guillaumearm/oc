@@ -6,10 +6,10 @@ AUTHOR
 
 DESCRIPTION
   Several fixes and improvements for OpenOS:
-    add /OSVERSION (used to set _OSVERSION global)
-    replace /lib/core/boot.lua script
-    improved /etc/profile.lua
+    add "/OSVERSION" file (used to set "_OSVERSION" global)
+    replace "/lib/core/boot.lua" script
+    improved "/etc/profile.lua"
     provide useful default aliases
 
 WARNING!
-  THe installation of this package replace your current `/etc/profile.lua` file
+  THe installation of this package replace your current "/etc/profile.lua" file
