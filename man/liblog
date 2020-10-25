@@ -25,7 +25,7 @@ API
   clean() => (boolean, error)
 
   -- enhance a function to log throwed errors
-  wrap(function) => functiom
+  wrap(function) => function
 
 EXAMPLES
   -- How to monitor daemon errors

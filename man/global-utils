@@ -1,0 +1,16 @@
+NAME
+  global-utils
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Ramda-like functional utilities avaible in the LUA global scope
+
+API
+  -- WIP
+  -- Please see available global utils
+  edit -r /boot/11_global_utils.lua
+
+EXAMPLES
+  -- WIP

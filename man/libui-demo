@@ -1,0 +1,16 @@
+NAME
+  libui-demo
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Some demos files for libui
+
+USAGE
+  -- list all available demos
+  ls /bin/demo
+
+EXAMPLES
+  -- run a specific demo
+  ui counter

@@ -11,16 +11,16 @@ DESCRIPTION
   For example, "man global-utils", "man libui" or even "man libui-demo"
 
 AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
-  global-utils *
-  libui *
-  libui-demo *
   wd
-  media *
-  redstone-onoff *
+  mediaxw
+  redstone-onoff
   fs-extra
   persistable
   liblog
   openos-patches
+  global-utils
+  libui
+  libui-demo
 
 
 Uninstall
