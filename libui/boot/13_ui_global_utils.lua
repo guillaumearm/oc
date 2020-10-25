@@ -12,7 +12,7 @@ local getPredicate = function(x)
 end
 
 --------------------------------
---------- UI
+--------- UI (views)
 --------------------------------
 _G.ui = uiApi.ui
 _G.uiWrap = uiApi.createUI
@@ -91,6 +91,16 @@ _G.stopUI = function()
 end
 
 --------------------------------
+--------- EFFECTS
+--------------------------------
+
+_G.pipeFx = function(...)
+  local fxs = pack(...)
+  local tappedFxs = map(tap, fxs)
+  return pipe(unpack(tappedFxs))
+end
+
+--------------------------------
 --------- UPDATERS
 --------------------------------
 
@@ -104,37 +114,87 @@ end
 
 _G.withInitialState = curryN(2, function(initialState, updater)
   return function(...)
-    return compose(defaultTo(initialState), updater(...))
+    local updateFn = updater(...)
+    return function(state)
+      local nextState, fx = updateFn(state)
+      return nextState or initialState, fx
+    end
   end
 end)
 
-_G.toReducer = function(updater)
-  return function(state, ...)
-    return updater(...)(state)
-  end
-end
+-- _G.toReducer = function(updater)
+--   return function(state, ...)
+--     return updater(...)(state)
+--   end
+-- end
 
-_G.toUpdater = function(reducer)
-  return function(...)
-    local action = pack(...)
-    return function(state)
-      return reducer(state, unpack(action))
-    end
-  end
-end
+-- _G.toUpdater = function(reducer)
+--   return function(...)
+--     local action = pack(...)
+--     return function(state)
+--       return reducer(state, unpack(action))
+--     end
+--   end
+-- end
 
 _G.combineUpdaters = function(updaters)
   return function(...)
-    local fns = deepMap(applyTo(...), updaters)
-    return evolve(fns)
+    local finalFx = noop
+    local actions = pack(...)
+
+    local fns = deepMap(function(updater)
+      local u = updater(unpack(actions))
+
+      return function(state)
+        local nextState, fx = u(state)
+
+        local prevFinalFx = finalFx
+        if fx then
+          finalFx = function()
+            prevFinalFx()
+            fx(state, nextState, unpack(actions))
+          end
+        end
+        return nextState
+      end
+    end, updaters)
+
+    local updateFn = evolve(fns)
+
+    return function(state)
+      return updateFn(state), finalFx
+    end
   end
 end
 
 _G.pipeUpdaters = function(...)
   local updaters = pack(...)
   return function(...)
-    local updateFns = map(applyTo(...), updaters)
-    return pipe(unpack(updateFns))
+    local finalFx = noop
+    local actions = pack(...)
+
+    local updateFns = map(function(updater)
+      local u = updater(unpack(actions))
+
+      return function(state)
+        local nextState, fx = u(state)
+
+        local prevFinalFx = finalFx
+        if fx then
+          finalFx = function()
+            prevFinalFx()
+            fx(state, nextState, unpack(actions))
+          end
+        end
+        return nextState
+      end
+    end, updaters)
+
+    local updateFn = pipe(unpack(updateFns))
+
+    return function(state)
+      return updateFn(state), finalFx
+    end
   end
 end
 
