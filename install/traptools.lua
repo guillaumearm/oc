@@ -10,7 +10,7 @@ local PACKAGE_LIST = {
   "liblog",
   "persistable",
   'fs-extra',
-  -- "openos-patches", disabled because it break the whole OS on reboot (after uninstall)
+  "openos-patches",
   "libui",
   "libui-demo",
   "redstone-onoff",
