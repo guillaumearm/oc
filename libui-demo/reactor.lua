@@ -224,7 +224,7 @@ return function()
   end)
 
   local stopHander = captureAction('@stop', function()
-    if intervalId != nil then
+    if intervalId ~= nil then
       clearInterval(intervalId)
     end
 
