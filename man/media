@@ -5,8 +5,12 @@ AUTHOR
   trapcodien
 
 DESCRIPTION
-  Add osx-like `/media` in your filesystem
-  All available mountpoints (except for the root one) is availble in `/media/label-name`
+  Daemon that allow to add osx-like "/media" mountpoints in your filesystem.
+
+  The daemon is automatically enabled when running "traptools init"
+  Otherwise, you can use "rc enable media" or "rc disable media"
+
+  All available mountpoints (except for the root one) is availble in "/media/label-name"
 
 EXAMPLES
   ls /media

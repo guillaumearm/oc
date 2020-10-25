@@ -1,0 +1,11 @@
+NAME
+  redstone-onoff
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Allow to Power-on or halt your computer using a regular redstone signal.
+
+  The daemon is automatically enabled when running "traptools init"
+  Otherwise, you can use "rc enable redstone-onoff" or "rc disable redstone-onoff"
