@@ -10,17 +10,18 @@ DESCRIPTION
   You can use the `man` command in your terminal with any available package
   For example, `man global-utils`, `man libui` or even `man libui-demo`
 
-AVAILABLE PACKAGES
+AVAILABLE PACKAGES (the `*` means there is no manual entry for this package)
   openos-patches
-  global-utils
-  fs-extra
-  persistable
-  liblog
-  wd
-  media
-  redstone-onoff
-  libui
-  libui-demo
+  global-utils *
+  libui *
+  libui-demo *
+  fs-extra *
+  persistable *
+  liblog *
+  wd *
+  media *
+  redstone-onoff *
+
 
 Uninstall
   `traptools uninstall`
