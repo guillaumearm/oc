@@ -16,7 +16,7 @@ os.setenv("HISTSIZE", "10")
 os.setenv("HOME", "/home")
 os.setenv("IFS", " ")
 os.setenv("MANPATH", "/man:/usr/man:.")
-os.setenv("PAGER", "less")
+os.setenv("PAGER", "shedit -r")
 os.setenv("PS1", "\27[40m\27[31m$HOSTNAME$HOSTNAME_SEPARATOR$PWD # \27[37m")
 os.setenv("LS_COLORS", "di=0;36:fi=0:ln=0;33:*.lua=0;32")
 
