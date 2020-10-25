@@ -203,10 +203,8 @@ end)
 -- return an updater that does not update the state but apply the given fx
 _G.justFx = function(fx)
   return function(...)
-    local actions = pack(...)
     return function(state)
-      fx(state, state, unpack(actions))
-      return state
+      return state, fx
     end
   end
 end

@@ -10,8 +10,12 @@ function runEvents(events, updater, handler)
   events = events or {}
 
   local prevState = nil
-  local state = updater(init())(prevState);
+  local state, fx = updater(init())(prevState);
 
+  if fx then
+    fx(prevState, state, init())
+  end
+  
   handler(prevState, state, init())
 
   while true do
@@ -21,7 +25,12 @@ function runEvents(events, updater, handler)
     local restEventArgs = tail(eventArgs)
 
     prevState = state
-    state = updater(eName, unpack(restEventArgs))(state)
+    state, fx = updater(eName, unpack(restEventArgs))(state)
+
+    if fx then
+      fx(prevState, state, eName, unpack(restEventArgs))
+    end
+
     handler(prevState, state, eName, unpack(restEventArgs))
 
     local shouldStop = eName == 'ui' and secondArg == '@stop'
