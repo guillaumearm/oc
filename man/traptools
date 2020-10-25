@@ -15,7 +15,7 @@ AVAILABLE PACKAGES (the `*` means there is no manual entry for this package)
   global-utils *
   libui *
   libui-demo *
-  fs-extra *
+  fs-extra
   persistable *
   liblog *
   wd *

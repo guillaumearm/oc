@@ -1,0 +1,24 @@
+NAME
+  fs-extra
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Library that provides some filesystem utilities for OpenOS
+
+API
+  readFile(path) => (data | nil, error)
+  writeFile(path, data, mode?) => (boolean, error)
+  appendFile(path, data) => (boolean, error)
+  readTable(path) => (table, error)
+  writeTable(path, table, prettyOutput) => (boolean, error)
+
+EXAMPLES
+  writeFile('/tmp/a-string', 'Hello World');
+  local str = readFile('/tmp/a-string');
+  print(str) -- 'Hello World'
+
+  writeTable('/tmp/a-table', { firstWord="Hello", secondWord="World" });
+  local t = readTable('/tmp/a-table');
+  print(t.firstWord .. " " .. t.secondWord) -- 'Hello World'
