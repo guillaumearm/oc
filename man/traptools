@@ -5,9 +5,9 @@ NAME
   traptools
 
 DESCRIPTION
-  A collection of oppm packages tools designed to work with OpenOS 1.7.5
-  `oppm install traptools` will install all this packages
-  Then, you can use the `man` command in your terminal with any pacakges
+  A collection of oppm packages tools designed for OpenOS 1.7.5
+
+  You can use the `man` command in your terminal with any available package
   For example, `man global-utils`, `man libui` or even `man libui-demo`
 
 AVAILABLE PACKAGES
@@ -22,3 +22,5 @@ AVAILABLE PACKAGES
   libui
   libui-demo
 
+UNINSTALL
+  `traptools uninstall`

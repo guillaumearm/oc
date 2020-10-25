@@ -28,17 +28,23 @@ local DAEMONS_TO_ACTIVATE = {
 
 
 local uninstallCommand = function()
+  -- backup /lib/core/original_boot.lua
+  exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
+
   -- Uninstall all packages
   for k, v in pairs(PACKAGE_LIST) do
     exec('oppm uninstall ' .. v)
   end
+
+  -- restore /lib/core/boot.lua
+  exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
 end
 
 local initCommand = function()
   -- init global utils
   exec('/boot/11_global_utils');
 
-  -- Activate all listed daemons
+  -- Enable all listed daemons
   for k, v in pairs(DAEMONS_TO_ACTIVATE) do
     exec('rc ' .. v .. ' enable')
   end
