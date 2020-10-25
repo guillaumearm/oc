@@ -45,7 +45,7 @@ shell.setWorkingDirectory(os.getenv("HOME"))
 -- Source files
 local sourceShellFile = function(shrc_path)
   if fs.exists(shrc_path) then
-    loadfile(shell.resolve("source", "lua"))(shrc_path)    
+    loadfile(shell.resolve("source", "lua"))(shrc_path)
   end
 end
 

@@ -31,6 +31,7 @@ local uninstallCommand = function(isHard)
   -- backup
   if not isHard then
     exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
+    exec('mv /lib/original_vt100.lua /tmp/vt100.lua')
     exec('mv /etc/profile.lua /tmp/saved_profile.lua')
   end
 
@@ -42,6 +43,7 @@ local uninstallCommand = function(isHard)
   -- restore
   if not isHard then
     exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
+    exec('mv /tmp/vt100.lua /lib/original_vt100.lua')
     exec('mv /tmp/saved_profile.lua /etc/profile.lua')
   end
 end

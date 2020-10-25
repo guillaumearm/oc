@@ -1,5 +1,15 @@
 local colors = require('colors')
-local setPal = require('component').gpu.setPaletteColor
+local os = require('os')
+local c = require('component')
+
+local noop = function() end
+
+local setPal = c and c.gpu and c.gpu.setPaletteColor or noop
+
+if not setPal then
+  printError('Error: 99_color_palette.lua is unable to find the current gpu')
+  os.sleep(4)
+end
 
 -- Monokai theme
 setPal(colors.white, 0xF8F8F2)
