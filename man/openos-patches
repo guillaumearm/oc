@@ -13,4 +13,4 @@ DESCRIPTION
     Mookai theme for vt100
 
 WARNING!
-  THe installation of this package replace your current "/etc/profile.lua" file
+  The installation of this package replace your current "/etc/profile.lua" file

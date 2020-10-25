@@ -1,0 +1,12 @@
+NAME
+  media
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Add osx-like `/media` in your filesystem
+  All available mountpoints (except for the root one) is availble in `/media/label-name`
+
+EXAMPLES
+  ls /media
