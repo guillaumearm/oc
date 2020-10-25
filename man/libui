@@ -7,10 +7,11 @@ AUTHOR
 DESCRIPTION
   An OpenOS library inspired by elm used to create user interfaces.
 
+  Please see available global utils for ui:
+  edit -r /boot/13_ui_global_utils.lua
+
 API
   -- WIP
-  -- Please see available global utils for ui
-  edit -r /boot/13_ui_global_utils.lua
 
 EXAMPLES
   -- WIP
