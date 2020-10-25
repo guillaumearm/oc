@@ -68,15 +68,15 @@ local function getComponentDefinition(c)
   return assertValidComponentDefinition(c)
 end
 
-local component, getErr = getcomponent()
+local component, err = getcomponent()
 
-if error then
-  printQuit(getErr)
+if err then
+  printQuit(err)
 end
 
 local cd = getComponentDefinition(component)
 
-local ok, runErr = pcall(runUI, cd.view, cd.updater, cd.handler, cd.capture)
+local ok, err = pcall(runUI, cd.view, cd.updater, cd.handler, cd.capture)
 
-if not ok then printQuit(runErr) end
+if not ok then printQuit(err) end
 
