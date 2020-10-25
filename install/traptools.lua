@@ -1,7 +1,7 @@
 local exec = require('shell').execute
 
 local firstArg, secondArg = ...
-local isHard = secondArg === '--hard'
+local isHard = secondArg == '--hard'
 
 -------------------------------------------------------------------------------
 
