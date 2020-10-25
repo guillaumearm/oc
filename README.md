@@ -1,26 +1,38 @@
 # OpenComputers programs
 
-## How to install on your current OS
+## Preliminaries
+
+- OpenOS 1.7.5
+- OPPM latest version
 
 ```
 oppm register guillaumearm/oc
+```
+
+## How to install on your current OS
+
+```
 oppm install -f traptools /
-traptools install
+traptools init
 ```
 
 ## How to install on a disk
 
 ```
-oppm register guillaumearm/oc
 oppm install traptools /mnt/mydisk
-label /mnt/mydisk "TrapTools"
 ```
 
 ## Install using a disk
 
 ```
 install
-traptools install
+traptools init
+```
+
+## How to use
+
+```
+man traptools
 ```
 
 ## Uninstall
@@ -28,6 +40,10 @@ traptools install
 ```
 traptools uninstall
 ```
+
+## Update traptools
+
+Uninstall then reinstall
 
 ## Global utils
 
@@ -104,4 +120,6 @@ edit -r /boot/13_ui_global_utils.lua
 
 ## Personalize color palette
 
+```
 edit /boot/12_color_palette.lua && /boot/12_color_palette.lua
+```

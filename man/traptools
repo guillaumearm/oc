@@ -1,0 +1,24 @@
+AUTHOR
+  Trapcodien
+
+NAME
+  traptools
+
+DESCRIPTION
+  A collection of oppm packages tools designed to work with OpenOS 1.7.5
+  `oppm install traptools` will install all this packages
+  Then, you can use the `man` command in your terminal with any pacakges
+  For example, `man global-utils`, `man libui` or even `man libui-demo`
+
+AVAILABLE PACKAGES
+  openos-patches
+  global-utils
+  fs-extra
+  persistable
+  liblog
+  wd
+  media
+  redstone-onoff
+  libui
+  libui-demo
+

@@ -1,3 +1,9 @@
+---------------------------------------------------------------------------
+------------  Name: ui-global-utils v0.10
+------------  Description: Global UI utilities
+------------  Author: Trapcodien
+---------------------------------------------------------------------------
+
 local event = require('event')
 local uiApi = require('ui')
 
