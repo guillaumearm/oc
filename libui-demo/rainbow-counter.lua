@@ -25,13 +25,11 @@ local button = ui(function(n, color, onClick)
   }
 end);
 
-local truc = button
-
 local page = ui(function(n)
   return {
     content={
       {button(n, 'magenta', cb(beep, 200)), button(n, 'blue', cb(beep, 440)), button(n, 'green', cb(beep, 880))},
-      {button('-', 'white', 'decrement'), button(n, 'lightblue'), button('+', 'orange', 'increment')},
+      {button('-', 'white', always('decrement')), button(n, 'lightblue'), button('+', 'orange', always('increment'))},
       {button(n, 'yellow'), button(n, 'lime'), button(n, 'pink')},
       {button(n, 'gray'), button(n, 'silver'), button(n, 'cyan')},
       {button(n, 'purple'), button(n, 'brown'), button(n, 'red')},
@@ -57,11 +55,9 @@ local counterUpdater = withInitialState(initialState,
   handleActions({
     tick=always(inc),
     increment=function(e)
-      if e.type == 1 then return add(10) end
       return add(1)
     end,
     decrement=function(e)
-      if e.type == 1 then return add(-10) end
       return add(-1)
     end
   })
