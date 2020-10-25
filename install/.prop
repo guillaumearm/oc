@@ -1,6 +1,6 @@
 {
-  label="TrapTools 3.0.0-rc.0",
-  setlabel=true,
-  setboot=true,
+  label="TrapTools 3.0.0-rc.1",
+  setlabel=false,
+  setboot=false,
   reboot=false
 }
