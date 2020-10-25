@@ -32,6 +32,7 @@ Uninstall
 
 Hard Uninstall
   "traptools uninstall --hard"
+  "traptools uninstall -h"
 
   It should be used for dedicated disk installations only,
   it prevents to restore files for the host machine

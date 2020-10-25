@@ -81,17 +81,19 @@ end
 if firstArg == 'init' or firstArg == 'i' or firstArg == 'install' then
   initCommand()
 elseif firstArg == 'uninstall' then
-  if secondArg and secondArg ~= '--hard' then
+  local isHard = secondArg == '--hard' or secondArg == '-h'
+
+  if secondArg and not isHard then
     printErr('Error: unknown flag "' .. secondArg .. '" for uninstall command')
   else
-    uninstallCommand(secondArg == '--hard')
+    uninstallCommand(isHard)
   end
   
 elseif firstArg == 'help' and secondArg == 'init' then
   print('`init` - this is the postinstall script, it enables embeded daemons and reboot the computer')
 elseif firstArg == 'help' and secondArg == 'uninstall' then
   print('`uninstall`        - remove traptools from your system and backup necessary files needed by OpenOS')
-  print('`uninstall --hard` - hardly remove traptools, it may breaks your system!')
+  print('`uninstall --hard|-h` - hardly remove traptools, it may breaks your system!')
 else
   printUsage()
 end
