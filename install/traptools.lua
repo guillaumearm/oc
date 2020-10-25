@@ -1,7 +1,6 @@
 local exec = require('shell').execute
 
 local firstArg, secondArg = ...
-local isHard = secondArg == '--hard'
 
 -------------------------------------------------------------------------------
 
@@ -28,7 +27,7 @@ local DAEMONS_TO_ACTIVATE = {
 -------------------------------------------------------------------------------
 
 
-local uninstallCommand = function()
+local uninstallCommand = function(isHard)
   -- backup
   if not isHard then
     exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
@@ -82,7 +81,12 @@ end
 if firstArg == 'init' or firstArg == 'i' or firstArg == 'install' then
   initCommand()
 elseif firstArg == 'uninstall' then
-  uninstallCommand()
+  if secondArg and secondArg ~= '--hard' then
+    printErr('Error: unknown flag "' .. secondArg .. '" for uninstall command')
+  else
+    uninstallCommand(secondArg == '--hard')
+  end
+  
 elseif firstArg == 'help' and secondArg == 'init' then
   print('`init` - this is the postinstall script, it enables embeded daemons and reboot the computer')
 elseif firstArg == 'help' and secondArg == 'uninstall' then
