@@ -1,8 +1,13 @@
 alias la="ls -la"
 alias c="clear"
-alias vi="edit"
-alias vim="edit"
-alias services="service list"
+
+alias v="$PAGER"
+alias show="$PAGER"
+alias see="$PAGER"
+
+alias vi="$EDITOR"
+alias vim="$EDITOR"
+alias e = "$EDITOR"
 
 alias poweroff="shutdown"
 alias halt="shutdown"
