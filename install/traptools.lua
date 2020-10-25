@@ -6,12 +6,17 @@ local firstArg = ...
 
 local PACKAGE_LIST = {
   "traptools",
-  "openos-patches",
+  "global-utils",
+  "liblog",
+  "persistable",
+  'fs-extra',
+  -- "openos-patches", disabled because it break the whole OS on reboot (after uninstall)
   "libui",
   "libui-demo",
   "redstone-onoff",
   "media",
-  "wd"
+  "wd",
+  "shedit"
 }
 
 local DAEMONS_TO_ACTIVATE = {
