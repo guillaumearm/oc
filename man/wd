@@ -1,0 +1,26 @@
+NAME
+  wd
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  "wd" (for working directory) is a collection of 3 cli programs ("wd", "setwd" and "wdlist")
+  to help to change directory between different places.
+
+EXAMPLES
+  cd /home
+  setwd home
+
+  cd /
+  setwd root
+
+  cd /usr/bin
+  setwd
+
+  wdlist
+
+  wd home && pwd
+  wd root && pwd
+  wd && pwd
+  wd - && pwd

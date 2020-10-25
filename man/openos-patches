@@ -10,6 +10,7 @@ DESCRIPTION
     replace "/lib/core/boot.lua" script
     improved "/etc/profile.lua"
     provide useful default aliases
+    Mookai theme for vt100
 
 WARNING!
   THe installation of this package replace your current "/etc/profile.lua" file
