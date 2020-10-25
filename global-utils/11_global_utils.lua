@@ -94,6 +94,13 @@ _G.applyTo = function(...)
   end
 end
 
+_G.cb = function(fn, ...)
+  local args = pack(...)
+  return function()
+    fn(unpack(args))
+  end
+end
+
 _G.pack = table.pack
 _G.unpack = table.unpack
 

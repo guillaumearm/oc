@@ -122,21 +122,6 @@ _G.withInitialState = curryN(2, function(initialState, updater)
   end
 end)
 
--- _G.toReducer = function(updater)
---   return function(state, ...)
---     return updater(...)(state)
---   end
--- end
-
--- _G.toUpdater = function(reducer)
---   return function(...)
---     local action = pack(...)
---     return function(state)
---       return reducer(state, unpack(action))
---     end
---   end
--- end
-
 _G.combineUpdaters = function(updaters)
   return function(...)
     local finalFx = noop
@@ -201,6 +186,30 @@ end
 _G.filterAction = curryN(2, function(predicate, updater)
   return ifElse(getPredicate(predicate), updater, always(identity))
 end)
+
+_G.withFx = curryN(2, function(givenFx, updater)
+  return function(...)
+    local update = updater(...)
+
+    return function(state)
+      local nextState, fx = update(state)
+      local finalFx = ternary(Boolean(fx), pipeFx(fx, givenFx), givenFx)
+      
+      return nextState, finalFx
+    end
+  end
+end)
+
+-- return an updater that does not update the state but apply the given fx
+_G.justFx = function(fx)
+  return function(...)
+    local actions = pack(...)
+    return function(state)
+      fx(state, state, unpack(actions))
+      return state
+    end
+  end
+end
 
 --------------------------------
 --------- HANDLERS

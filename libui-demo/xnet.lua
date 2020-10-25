@@ -4,6 +4,11 @@ local c = require('component')
 
 local beep = c.computer.beep
 
+local beepbeep = function()
+  beep()
+  beep()
+end
+
 ------------------------------------------------------------------------------------------------
 
 local maxHeight = 20
@@ -95,24 +100,17 @@ end)
 
 
 local rootUpdater = combineUpdaters({
-  refreshButton=buttonComponent.updater
+  refreshButton=buttonComponent.updater,
+  fxs=handleActions({
+    ['@init']=justFx(cb(beep)),
+    ['@stop']=justFx(cb(beepbeep)),
+  }), -- is it working ?
 })
 
---------------------------------------------------------
-local initHandler = captureAction('@init', function(prevState, state)
-  beep()
-end)
-
-local stopHandler = captureAction('@stop', function(prevState, state)
-  beep()
-end)
-
-local handler = pipeHandlers(initHandler, stopHandler)
 -----------------------------------------------------
 
 local component = {
   view=App,
-  handler=handler,
   updater=rootUpdater
 }
 

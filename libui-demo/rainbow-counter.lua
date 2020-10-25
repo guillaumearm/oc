@@ -1,13 +1,5 @@
 local c = require('component')
 
--- should be a global-utils ? (try to find another name)
-local cb = function(fn, ...)
-  local args = pack(...)
-  return function()
-    return fn(unpack(args))
-  end
-end
-
 local beep = c.computer.beep
 
 ------------------------------------------------------------------------------------------------
