@@ -22,5 +22,15 @@ AVAILABLE PACKAGES
   libui
   libui-demo
 
-UNINSTALL
+Uninstall
   `traptools uninstall`
+
+  It should be used for regular system installations only,
+  it restores system files needed by OpenOS
+  i.e. `oppm install -f traptools /`
+
+Hard Uninstall
+  `traptools uninstall --hard`
+
+  It should be used for dedicated disk installations only,
+  it prevents to restore files for the host machine

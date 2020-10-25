@@ -1,6 +1,7 @@
 local exec = require('shell').execute
 
-local firstArg = ...
+local firstArg, secondArg = ...
+local isHard = secondArg === '--hard'
 
 -------------------------------------------------------------------------------
 
@@ -29,8 +30,10 @@ local DAEMONS_TO_ACTIVATE = {
 
 local uninstallCommand = function()
   -- backup
-  exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
-  exec('mv /etc/profile.lua /tmp/saved_profile.lua')
+  if not isHard then
+    exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
+    exec('mv /etc/profile.lua /tmp/saved_profile.lua')
+  end
 
   -- Uninstall all packages
   for k, v in pairs(PACKAGE_LIST) do
@@ -38,8 +41,10 @@ local uninstallCommand = function()
   end
 
   -- restore
-  exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
-  exec('mv /tmp/saved_profile.lua /etc/profile.lua')
+  if not isHard then
+    exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
+    exec('mv /tmp/saved_profile.lua /etc/profile.lua')
+  end
 end
 
 local initCommand = function()
@@ -56,7 +61,12 @@ local initCommand = function()
 end
 
 function printUsage()
-  print('Usage: traptools <init|uninstall>')
+  print('Usage:')
+  print('\t\t traptools init')
+  print('\t\t traptools uninstall [--safe]')
+  print('\t\t traptools help [<command>]')
+  print('')
+  print('type `man traptools` for more details')
 end
 
 -------------------------------------------------------------------------------
@@ -73,6 +83,11 @@ if firstArg == 'init' or firstArg == 'i' or firstArg == 'install' then
   initCommand()
 elseif firstArg == 'uninstall' then
   uninstallCommand()
+elseif firstArg == 'help' and secondArg == 'init' then
+  print('`init` - this is the postinstall script, it enables embeded daemons and reboot the computer')
+elseif firstArg == 'help' and secondArg == 'uninstall' then
+  print('`uninstall`        - remove traptools from your system and backup necessary files needed by OpenOS')
+  print('`uninstall --hard` - hardly remove traptools, it may breaks your system!')
 else
   printUsage()
 end
