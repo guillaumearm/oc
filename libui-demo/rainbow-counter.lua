@@ -1,10 +1,6 @@
-local colors = require('colors')
-local runUI = import('ui/run')
-local event = require('event')
 local c = require('component')
-local gpu = c.gpu
-local os = require('os')
 
+-- should be a global-utils ? (try to find another name)
 local cb = function(fn, ...)
   local args = pack(...)
   return function()
@@ -34,12 +30,12 @@ local truc = button
 local page = ui(function(n)
   return {
     content={
-      {truc(n, 'magenta', cb(beep, 200)), truc(n, 'blue', cb(beep, 440)), truc(n, 'green', cb(beep, 880))},
-      {truc('-', 'white', click('decrement')), truc(n, 'lightblue'), truc('+', 'orange', click('increment'))},
-      {truc(n, 'yellow'), truc(n, 'lime'), truc(n, 'pink')},
-      {truc(n, 'gray'), truc(n, 'silver'), truc(n, 'cyan')},
-      {truc(n, 'purple'), truc(n, 'brown'), truc(n, 'red')},
-      {truc(n, 'white', cb(beep, 880 * 2))}
+      {button(n, 'magenta', cb(beep, 200)), button(n, 'blue', cb(beep, 440)), button(n, 'green', cb(beep, 880))},
+      {button('-', 'white', 'decrement'), button(n, 'lightblue'), button('+', 'orange', 'increment')},
+      {button(n, 'yellow'), button(n, 'lime'), button(n, 'pink')},
+      {button(n, 'gray'), button(n, 'silver'), button(n, 'cyan')},
+      {button(n, 'purple'), button(n, 'brown'), button(n, 'red')},
+      {button(n, 'white', cb(beep, 880 * 2))}
     }
   }
 end)
@@ -71,14 +67,12 @@ local counterUpdater = withInitialState(initialState,
   })
 )
 
-local rootView = doublePage
-local rootHandler = nil
+local App = doublePage
+local mainUpdater = counterUpdater
+local mainHandler = nil
 
-local intervalId = setInterval(function()
-  dispatch('tick')
-end, 1000)
-
-local ok, err = pcall(runUI, rootView, counterUpdater, rootHandler)
-if not ok then printErr(err) end
-
-clearInterval(intervalId)
+return {
+  view=App,
+  updater=mainUpdater,
+  handler=mainHandler
+}

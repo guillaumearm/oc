@@ -1,4 +1,3 @@
-local runUI = import('ui/run')
 local c = require('component')
 
 ------------------------------------------------------------------------------------------------
@@ -58,7 +57,7 @@ local counterUpdater = withInitialState(0,
   })
 )
 
-local rootUpdater = combineUpdaters({
+local mainUpdater = combineUpdaters({
   counter={
     value=counterUpdater
   }
@@ -69,34 +68,19 @@ local initHandler = captureAction('@init', function(prevState, state)
   beep()
 end)
 
-local incHandler = captureAction('increment', function() beep() end)
-local decHandler = captureAction('decrement', function() beep() end)
 local resetHandler = captureAction('reset', function() beep() end)
-local terminatedHandler = captureEvent('interrupted', function() beep() end)
-
-local tickHandler = captureAction('tick', function(prevState, state)
- -- do something here
-end)
+local terminatedHandler = captureAction('@stop', function() beep(); beep() end)
 
 
 local mainHandler = pipeHandlers(
   initHandler,
   terminatedHandler,
-  tickHandler,
-  incHandler,
-  decHandler,
   resetHandler
 )
 --------------------------------------------------------
 
-local rootView = App
-local rootHandler = mainHandler
-
-local intervalId = setInterval(function()
-  dispatch('tick')
-end, 5000)
-
-local ok, err = pcall(runUI, rootView, rootUpdater, rootHandler)
-if not ok then printErr(err) end
-
-clearInterval(intervalId)
+return {
+  view=App,
+  updater=mainUpdater,
+  hander=mainHandler
+}

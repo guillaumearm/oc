@@ -1,16 +1,4 @@
-local colors = require('colors')
-local runUI = import('ui/run')
-local event = require('event')
 local c = require('component')
-local gpu = c.gpu
-local os = require('os')
-
-local cb = function(fn, ...)
-  local args = pack(...)
-  return function()
-    return fn(unpack(args))
-  end
-end
 
 local beep = c.computer.beep
 
@@ -181,7 +169,7 @@ local reactorBufferUpdater = withInitialState(0,
   })
 )
 
-local rootUpdater = combineUpdaters({
+local mainUpdater = combineUpdaters({
   reactor={
     auto=reactorAutoUpdater,
     rate=reactorRateUpdater,
@@ -191,18 +179,6 @@ local rootUpdater = combineUpdaters({
 })
 
 --------------------------------------------------------
-local initHandler = captureAction('@init', function(prevState, state)
-  if state.reactor.auto and state.reactor.buffer < maxBuffer then
-    enableReactor()
-  else
-    disableReactor()
-  end
-end)
-
-local terminatedHandler = captureEvent('interrupted', function()
-  disableReactor()
-end)
-
 local tickHandler = captureAction('tick', function(prevState, state)
   local prevBuffer = prevState.reactor.buffer
   local newBuffer = state.reactor.buffer
@@ -227,23 +203,39 @@ local stopAutoHandler = captureAction('stopAuto', function(prevState, state)
   disableReactor()
 end)
 
-local mainHandler = pipeHandlers(
-  initHandler,
-  terminatedHandler,
-  tickHandler,
-  startAutoHandler,
-  stopAutoHandler
-)
 --------------------------------------------------------
 
-local rootView = App
-local rootHandler = mainHandler
 
-local intervalId = setInterval(function()
-  dispatch('tick')
-end, 5000)
+return function()
+  local mainUpdater = counterUpdater
 
-local ok, err = pcall(runUI, rootView, rootUpdater, rootHandler)
-if not ok then printErr(err) end
+  local intervalId = nil
 
-clearInterval(intervalId)
+  local initHandler = captureAction('@init', function(prevState, state)
+    intervalId = setInterval(function()
+      dispatch('tick')
+    end, 3000)
+
+    if state.reactor.auto and state.reactor.buffer < maxBuffer then
+      enableReactor()
+    else
+      disableReactor()
+    end
+  end)
+
+  local stopHander = captureAction('@stop', function()
+    if intervalId != nil then
+      clearInterval(intervalId)
+    end
+
+    disableReactor()
+  end)
+
+  local mainHandler = pipeHandlers(initHandler, stopHandler, tickHandler, startAutoHandler, stopAutoHandler)
+
+  return {
+    view=App,
+    updater=mainUpdater,
+    handler=mainHandler
+  }
+end

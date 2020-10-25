@@ -1,18 +1,3 @@
-local colors = require('colors')
-local runUI = import('ui/run')
-local event = require('event')
-local c = require('component')
-local gpu = c.gpu
-local os = require('os')
-
-local cb = function(fn, ...)
-  local args = pack(...)
-  return function()
-    return fn(unpack(args))
-  end
-end
-
-local beep = c.computer.beep
 
 ------------------------------------------------------------------------------------------------
 
@@ -40,7 +25,7 @@ local Gauge = pipe(
   end)
 )
 
-local ReactorApp = ui(function(n)
+local ProgressBar = ui(function(n)
   return {
     content={
       {Gauge(20, n)}
@@ -66,14 +51,30 @@ local counterUpdater = withInitialState(initialState,
   })
 )
 
-local rootView = ReactorApp
-local rootHandler = nil
 
-local intervalId = setInterval(function()
-  dispatch('tick')
-end, 1000)
+return function()
+  local App = ProgressBar
+  local mainUpdater = counterUpdater
 
-local ok, err = pcall(runUI, rootView, counterUpdater, rootHandler)
-if not ok then printErr(err) end
+  local intervalId = nil
 
-clearInterval(intervalId)
+  local initHandler = captureAction('@init', function()
+    intervalId = setInterval(function()
+      dispatch('tick')
+    end, 1000)
+  end)
+
+  local stopHander = captureAction('@stop', function()
+    if intervalId != nil then
+      clearInterval(intervalId)
+    end
+  end)
+
+  local mainHandler = pipeHandlers(initHandler, stopHandler)
+
+  return {
+    view=App,
+    updater=mainUpdater,
+    handler=mainHandler
+  }
+end
