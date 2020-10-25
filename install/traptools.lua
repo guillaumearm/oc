@@ -28,16 +28,18 @@ local DAEMONS_TO_ACTIVATE = {
 
 
 local uninstallCommand = function()
-  -- backup /lib/core/original_boot.lua
+  -- backup
   exec('mv /lib/core/original_boot.lua /tmp/original_boot.lua')
+  exec('mv /etc/profile.lua /tmp/saved_profile.lua')
 
   -- Uninstall all packages
   for k, v in pairs(PACKAGE_LIST) do
     exec('oppm uninstall ' .. v)
   end
 
-  -- restore /lib/core/boot.lua
+  -- restore
   exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
+  exec('mv /tmp/saved_profile.lua /etc/profile.lua')
 end
 
 local initCommand = function()
