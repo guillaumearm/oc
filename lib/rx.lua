@@ -714,12 +714,15 @@ function Observable:defaultIfEmpty(...)
   end)
 end
 
+local defaultScheduler = nil
+
 --- Returns a new Observable that produces the values of the original delayed by a time period.
 -- @arg {number|function} time - An amount in milliseconds to delay by, or a function which returns
 --                                this value.
 -- @arg {Scheduler} scheduler - The scheduler to run the Observable on.
 -- @returns {Observable}
 function Observable:delay(time, scheduler)
+  scheduler = scheduler or defaultScheduler
   time = type(time) ~= 'function' and util.constant(time) or time
 
   return Observable.create(function(observer)
@@ -2304,6 +2307,8 @@ ReplaySubject.__call = ReplaySubject.onNext
 
 Observable.wrap = Observable.buffer
 Observable['repeat'] = Observable.replicate
+
+defaultScheduler = TimeoutScheduler
 
 return {
   util = util,
