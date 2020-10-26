@@ -420,7 +420,7 @@ end
 
 _G.evolve = curryN(2, function(evolveTable, t)
   t = t or {}
-  local updatedTable = map(function(fn, id)
+  local updatedTable = mapIndexed(function(fn, id)
     local elem = t[id]
     if isTable(fn) then return evolve(fn, elem) end
     return fn(elem)
@@ -1089,6 +1089,20 @@ local mapString = function(f, str)
 end
 
 _G.map = curryN(2, function(f, t)
+  if isNull(t) then return null end
+  if isString(t) then return mapString(f, t) end
+
+  local ret = {}
+  ret.n = t.n
+
+  forEach(function(v, k)
+    ret[k] = f(v)
+  end, t)
+
+  return ret
+end)
+
+_G.mapIndexed = curryN(2, function(f, t)
   if isNull(t) then return null end
   if isString(t) then return mapString(f, t) end
 
