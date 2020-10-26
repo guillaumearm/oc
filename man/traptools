@@ -21,6 +21,8 @@ AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   global-utils
   libui
   libui-demo
+  rx
+  rx-extra *
 
 
 Uninstall

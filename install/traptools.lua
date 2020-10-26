@@ -11,6 +11,7 @@ local PACKAGE_LIST = {
   "persistable",
   'fs-extra',
   'rx',
+  'rx-extra',
   "openos-patches",
   "libui",
   "libui-demo",
