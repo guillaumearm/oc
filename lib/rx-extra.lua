@@ -37,4 +37,12 @@ api.run = function(observable, observer)
   return true
 end
 
+api.combineSubscriptions = function(...)
+  local subscriptions = flatten(pack(...))
+
+  return Rx.Subscription.create(function()
+    forEach(callMethod('unsubscribe'), subscriptions)
+  end)
+end
+
 return api
