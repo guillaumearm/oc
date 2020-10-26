@@ -6,7 +6,7 @@ local sub = Rx.Observable.fromRange(1, 8)
   :concat(Rx.Observable.of('who do we appreciate'))
   :map(function(value) return value .. '!' end)
   :delay(1000)
-  :subscribe(print, printErr, event.push('interrupted'))
+  :subscribe(print, printErr, function() event.push('interrupted') end)
 
 
 event.pull('interrupted')
