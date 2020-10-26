@@ -32,7 +32,7 @@ api.run = function(observable, observer)
   local sub = observable:subscribe(Rx.Observer.create(onNext, onError, onCompleted))
 
   event.pullMultiple('interrupted', '@rx/stop')
-  sub.unsubscribe()
+  sub:unsubscribe()
 
   return true
 end
