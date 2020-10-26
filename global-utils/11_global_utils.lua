@@ -80,13 +80,6 @@ _G.flip = function(f)
   end)
 end
 
-_G.apply = function(...)
-  local fns = pack(...)
-  return function(...)
-    return pipe(unpack(fns))(...)
-  end
-end
-
 _G.applyTo = function(...)
   local args = pack(...)
   return function(...)
@@ -94,12 +87,14 @@ _G.applyTo = function(...)
   end
 end
 
-_G.cb = function(fn, ...)
+_G.apply = function(fn, ...)
   local args = pack(...)
   return function()
     fn(unpack(args))
   end
 end
+
+_G.cb = apply
 
 _G.pack = table.pack
 _G.unpack = table.unpack
@@ -861,7 +856,7 @@ end)
 
 _G.equalsBy = curryN(2, function(comparator, a, b)
   if (a == b) then return true end
-  
+
   if isNotTable(a) or isNotTable(b) then return false end
 
   local isShallowEquals = true
@@ -888,7 +883,7 @@ _G.equalsBy = curryN(2, function(comparator, a, b)
 end)
 
 _G.notEqualsBy = curryN(2, function(comparator, a, b)
-    return not equalsBy(comparator, a, b)    
+    return not equalsBy(comparator, a, b)
 end)
 
 _G.equals = equalsBy(identical)
@@ -967,7 +962,7 @@ local Z = byte('Z')
 _G.isAlphaMin = function(v)
   if not isString(v) then return false end
   local code = byte(v)
-  return code >= a and code <= z    
+  return code >= a and code <= z
 end
 
 _G.isAlphaMaj = function(v)
