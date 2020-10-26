@@ -10,6 +10,7 @@ local PACKAGE_LIST = {
   "liblog",
   "persistable",
   'fs-extra',
+  'rx',
   "openos-patches",
   "libui",
   "libui-demo",
@@ -43,7 +44,7 @@ local uninstallCommand = function(isHard)
   -- restore
   if not isHard then
     exec('mv /tmp/original_boot.lua /lib/core/boot.lua')
-    exec('mv /tmp/vt100.lua /lib/original_vt100.lua')
+    exec('mv /tmp/vt100.lua /lib/vt100.lua')
     exec('mv /tmp/saved_profile.lua /etc/profile.lua')
   end
 end
