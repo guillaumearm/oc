@@ -936,6 +936,14 @@ _G.tap = function(f)
   end
 end
 
+_G.callMethod = function(name, ...)
+  local args = pack(...)
+
+  return function(obj)
+    return obj[name](obj, unpack(args))
+  end
+end
+
 _G.add = curryN(2, function(a, b) return a + b end)
 _G.sub = curryN(2, function(a, b) return b - a end)
 _G.multiply = curryN(2, function(a, b) return a * b end)
