@@ -11,6 +11,8 @@ oppm register guillaumearm/oc
 
 ## How to install on your current OS
 
+Warning! it's recommended to take a fresh OS at this step.
+
 ```
 oppm install -f traptools /
 traptools init
