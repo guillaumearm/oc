@@ -1,4 +1,4 @@
-local os = require('os')
+local event = require('event')
 local Rx = require('rx')
 
 Rx.Observable.fromRange(1, 8)
@@ -6,6 +6,8 @@ Rx.Observable.fromRange(1, 8)
   :concat(Rx.Observable.of('who do we appreciate'))
   :map(function(value) return value .. '!' end)
   :delay(1000)
-  :subscribe(print)
+  :subscribe(print, printErr, event.push('interrupted'))
 
-os.sleep(3)
+
+event.pull('interrupted')
+sub:unsubscribe()
