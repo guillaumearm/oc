@@ -1336,10 +1336,8 @@ local function dumpTable(tbl, indent)
     if type(v) == "table" and isNotEmpty(v) then
       print(formatting)
       dumpTable(v, indent+1)
-    elseif type(v) == 'boolean' then
-      print(formatting .. tostring(v))      
     else
-      print(formatting .. v)
+      print(formatting .. tostring(v))
     end
   end
 end
