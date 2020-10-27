@@ -1,18 +1,9 @@
--- local Rx = require('rx')
+return function(sources)
+  local hello = of('Hello World!')
+  local onStop = sources.stop:map(always("Bye!"))
 
--- return Rx.Observable.fromRange(1, 8)
---   :filter(function(x) return x % 2 == 0 end)
---   :concat(Rx.Observable.of('who do we appreciate'))
---   :map(function(value) return value .. '!' end)
---   :delay(1000)
---   :merge(
---     Rx.Observable.of('hello!'),
---     Rx.Observable.of('bye!'):delay(2000)
---   )
-
-return function()
   return {
-    print=of('Hello World'),
-    stop=of()
+    print=hello:concat(interval(100):merge(onStop)),
+    stop=of(true):delay(2500)
   }
 end

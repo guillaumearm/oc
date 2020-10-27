@@ -40,9 +40,9 @@ end
 
 printVerbose('start program')
 
-local ok, err = rxe.runCycle(cycle)
+local sub = rxe.runCycle(cycle)
+sub:unsubscribe()
 
 printVerbose('stop program')
 
-if not ok then printQuit(err) end
 
