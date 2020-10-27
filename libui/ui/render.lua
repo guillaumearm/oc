@@ -89,22 +89,29 @@ end
 ------------------------------------------------------------------------------------------------
 
 function render(elem, style, x, y, registerEvent)
+  local rendered = false
   x = x or 1
   y = y or 1
   registerEvent = registerEvent or noop
   style = merge(defaultStyle, style or {})
 
-  gpu.setForeground(getHexaColor(style.color))
-  gpu.setBackground(getHexaColor(style.backgroundColor))
+  function prepareScreen()
+    gpu.setForeground(getHexaColor(style.color))
+    gpu.setBackground(getHexaColor(style.backgroundColor))
+    stateStyle = getCurrentStyle()
 
-  stateStyle = getCurrentStyle()
+    local w, h = gpu.getResolution()
+    gpu.fill(1, 1, w, h, ' ')
+  end
 
-  local w, h = gpu.getResolution()
-  gpu.fill(1, 1, w, h, ' ') 
+  local previousRenderedElement = nil
 
-  local previousRenderedElement = nil 
+  function paint(e)
+    if not rendered then
+      rendered = true
+      prepareScreen()
+    end
 
-  function rerender(e)
     e = e or elem
     local prev = previousRenderedElement
 
@@ -124,8 +131,8 @@ function render(elem, style, x, y, registerEvent)
     end
   end
 
-  if e then rerender(e) end
-  return rerender
+  if e then paint(e) end
+  return paint
 end
 
 ------------------------------------------------------------------------------------------------

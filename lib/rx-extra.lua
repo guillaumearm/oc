@@ -92,7 +92,7 @@ local createUiDrivers = function()
   local domNewHandlers = {}
   local domHandlers = {}
 
-  local repaint = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
+  local pain = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
     table.insert(domNewHandlers, { onClick=onClick, x=x, y=y, width=width, height=height })
   end)
 
@@ -107,7 +107,7 @@ local createUiDrivers = function()
       gpu.setResolution(element.width, element.height)
     end
 
-    repaint(element, ...)
+    pain(element, ...)
     domHandlers = domNewHandlers
     domNewHandlers = {}
   end
@@ -168,12 +168,12 @@ api.runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterrup
   end
 
   local stopDriver, setStopSubscription = createStopDriver()
-  -- local uiDriver, uiCleanDriver = createUiDrivers()
+  local uiDriver, uiCleanDriver = createUiDrivers()
 
   local getDefaultDrivers = withDefault({
     state=stateDriver,
-    -- ui=uiDriver,
-    -- uiClean=uiCleanDriver,
+    ui=uiDriver,
+    uiClean=uiCleanDriver,
     print=printDriver,
     stop=stopDriver,
     noop=noopDriver
