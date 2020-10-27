@@ -12,6 +12,7 @@
 
 return function()
   return {
-    print=of('Hello World')
+    print=of('Hello World'),
+    stop=of()
   }
 end

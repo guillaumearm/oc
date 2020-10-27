@@ -72,7 +72,7 @@ local createStopDriver = function()
   return function(sink)
     -- delay 20ms before unsubscribe
     return sink:delay(20):subscribe(function()
-      event.push('@rx-cycle/stop')
+      event.push('@cycle/stop')
       getStopSubscription():unsubscribe()
     end), sink
   end, setStopSubscription
@@ -207,7 +207,7 @@ api.runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterrup
   local sinkSubscriptions = applyTo(sinksSubjects)(
     mapIndexed(function(s, k)
       local sink = sinks[k]
-      if sink then return sink.subscribe(s) end
+      if sink then return sink:subscribe(s) end
     end),
     reject(isNil)
   )
@@ -217,9 +217,9 @@ api.runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterrup
   setStopSubscription(finalSub)
 
   if shouldWaitForStop and shouldWaitForInterrupted then
-    event.pullMultiple('@rx-cycle/stop', 'interrupted');
+    event.pullMultiple('@cycle/stop', 'interrupted');
   elseif shouldWaitForStop and not shouldWaitForInterrupted then
-    event.pull('@rx-cycle/stop');
+    event.pull('@cycle/stop');
   elseif not shouldWaitForStop and shouldWaitForInterrupted then
     event.pull('interrupted');
   end
