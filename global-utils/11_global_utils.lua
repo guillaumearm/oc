@@ -454,6 +454,7 @@ _G.keys = function(t)
     i = i + 1
   end, t)
 
+  ret.n = i - 1
   return ret
 end
 
@@ -466,6 +467,7 @@ _G.values = function(t)
     i = i + 1
   end, t)
 
+  ret.n = i - 1
   return ret
 end
 
