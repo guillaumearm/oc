@@ -70,8 +70,7 @@ local createStopDriver = function()
   end
 
   return function(sink)
-    -- delay 20ms before unsubscribe
-    return sink:delay(20):subscribe(function()
+    return sink:subscribe(function()
       getStopSubscription():unsubscribe()
       event.push('@cycle/stop')
     end), sink
