@@ -1,6 +1,6 @@
 local os = require('os')
 local shell = require('shell')
-local rxe = require('rx-extra')
+local runCycle = require('rx-cycle')
 
 local args = pack(...)
 
@@ -40,7 +40,7 @@ end
 
 printVerbose('start program')
 
-local sub = rxe.runCycle(cycle)
+local sub = runCycle(cycle)
 sub:unsubscribe()
 
 printVerbose('stop program')
