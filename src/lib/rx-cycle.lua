@@ -128,12 +128,12 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   end
 
   local stopDriver, setStopSubscription = createStopDriver()
-  local uiDriver, uiCleanDriver = createUiDrivers()
+  local uiDriver, uiClearDriver = createUiDrivers()
 
   local getDefaultDrivers = withDefault({
     state=stateDriver,
     ui=uiDriver,
-    uiClean=uiCleanDriver,
+    uiClear=uiClearDriver,
     print=printDriver,
     stop=stopDriver,
     noop=noopDriver
