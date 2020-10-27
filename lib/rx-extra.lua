@@ -212,7 +212,7 @@ api.runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterrup
     reject(isNil)
   )
 
-  local finalSub = combineSubscriptions(unpack(values(driverSubscriptions)), unpack(values(sinkSubscriptions)))
+  local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions))
 
   setStopSubscription(finalSub)
 
