@@ -170,7 +170,7 @@ end
 _G.flatten = function(t)
   local ret = {}
   for _, v in ipairs(t) do
-    if type(v) == 'table' then
+    if isArray(v) then
       for _, fv in ipairs(flatten(v)) do
         ret[#ret + 1] = fv
       end
@@ -743,6 +743,11 @@ end
 
 _G.isString = is('string')
 _G.isTable = is('table')
+
+_G.isArray = function(x)
+  return isTable(x) and isNumber(x.n)
+end
+
 _G.isNumber = is('number')
 _G.isBoolean = is('boolean')
 _G.isFunction = is('function')
