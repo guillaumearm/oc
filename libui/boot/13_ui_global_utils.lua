@@ -28,12 +28,12 @@ _G.Raw = function(strOrElement)
 end
 
 _G.horizontal = function(...)
-  local content = of(map(Raw, pack(...)))
+  local content = arrayOf(map(Raw, pack(...)))
   return uiWrapContent(content)
 end
 
 _G.vertical = function(...)
-  return uiWrapContent(map(compose(of, Raw), pack(...)))
+  return uiWrapContent(map(compose(arrayOf, Raw), pack(...)))
 end
 
 _G.withStyle = curryN(2, function(style, element)

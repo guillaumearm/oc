@@ -1,6 +1,5 @@
 local os = require('os')
 local shell = require('shell')
-local rx = require('rx')
 local rxe = require('rx-extra')
 
 local args = pack(...)
@@ -9,17 +8,15 @@ local firstArg = head(args)
 local restArgs = tail(args)
 
 local verbose = false
-local observer = nil
 
 local function printVerbose(message)
   if (verbose) then
-    print('> rx: ' .. message)
+    print('> cycle: ' .. message)
   end
 end
 
 if firstArg == '-v' or firstArg == '--verbose' then
   verbose = true
-  observer = rx.Observer.create(print, printError, noop)
 
   firstArg = head(restArgs)
   restArgs = tail(restArgs)
@@ -29,8 +26,8 @@ local givenFileName = firstArg
 
 local filePath = shell.resolve(givenFileName, 'lua')
 
-local getobservable = loadfile(filePath)
-local observable, readErr = getobservable(unpack(restArgs))
+local getcycle = loadfile(filePath)
+local cycle, readErr = getcycle(unpack(restArgs))
 
 local function printQuit(...)
   printErr(...)
@@ -41,11 +38,11 @@ if readErr then
   printQuit(readErr)
 end
 
-printVerbose('start observable program')
+printVerbose('start program')
 
-local ok, err = rxe.run(observable, observer)
+local ok, err = rxe.runCycle(cycle)
 
-printVerbose('stop observable program')
+printVerbose('stop program')
 
 if not ok then printQuit(err) end
 

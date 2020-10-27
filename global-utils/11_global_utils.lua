@@ -302,8 +302,8 @@ _G.abs = math.max
 
 _G.negate = function(x) return -x end
 
-_G.of = function(v) return {v} end
-_G.just = of
+_G.arrayOf = function(v) return {v} end
+_G.just = arrayOf
 _G.none = function() return null end
 
 _G.maybe = function(x)
@@ -318,7 +318,7 @@ end)
 
 _G.ensureTable = function(x)
   if isTable(x) then return x end
-  return of(x)
+  return arrayOf(x)
 end
 
 _G.isWhitespace = function(v)
@@ -729,13 +729,17 @@ _G.oneOf = flip(contains)
 
 -- TYPE PREDICATES
 
-_G.is = curryN(2, function(givenType, value)
-  return type(value) == givenType
-end)
+_G.is = function(givenType)
+  return function(value)
+    return type(value) == givenType
+  end
+end
 
-_G.isNot = curryN(2, function(givenType, value)
-  return not (type(value) == givenType)
-end)
+_G.isNot = function(givenType)
+  return function(value)
+    return type(value) ~= givenType
+  end
+end
 
 _G.isString = is('string')
 _G.isTable = is('table')
@@ -1124,6 +1128,10 @@ _G.deepMap = curryN(2, function(f, t)
   return f(t)
 end)
 
+_G.pluck = curryN(2, function(k, t)
+  return map(prop(k), t)
+end)
+
 local filterString = function(predicate, str)
   local ret = ''
 
@@ -1296,6 +1304,14 @@ _G.setInterval = function(cb, ms)
 end
 
 _G.clearInterval = event.cancel
+
+
+-------------------
+--  ACTIONS UTILS  --
+-------------------
+_G.createAction = curryN(2, function(type, payload)
+  return { type=type, payload=payload }
+end)
 
 -------------------
 
