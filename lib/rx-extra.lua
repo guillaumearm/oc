@@ -72,8 +72,8 @@ local createStopDriver = function()
   return function(sink)
     -- delay 20ms before unsubscribe
     return sink:delay(20):subscribe(function()
-      event.push('@cycle/stop')
       getStopSubscription():unsubscribe()
+      event.push('@cycle/stop')
     end), sink
   end, setStopSubscription
 end
@@ -212,7 +212,7 @@ api.runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterrup
     reject(isNil)
   )
 
-  local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions))
+  local finalSub = combineSubscriptions(unpack(values(driverSubscriptions)), unpack(values(sinkSubscriptions)))
 
   setStopSubscription(finalSub)
 

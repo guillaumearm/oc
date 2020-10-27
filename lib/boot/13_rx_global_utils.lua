@@ -77,6 +77,8 @@ _G.combineSubscriptions = function(...)
   local subscriptions = flatten(pack(...))
 
   return Rx.Subscription.create(function()
-    forEach(callMethod('unsubscribe'), subscriptions)
+    forEach(function(s)
+      s:unsubscribe()
+    end, subscriptions)
   end)
 end
