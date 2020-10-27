@@ -62,6 +62,7 @@ local createStopDriver = function()
   local storedStopSubscription = Rx.Subscription.create(noop)
 
   local setStopSubscription = function(sub)
+    print('> set stop sub!')
     storedStopSubscription = sub
   end
 
@@ -72,6 +73,7 @@ local createStopDriver = function()
   return function(sink)
     -- delay 20ms before unsubscribe
     return sink:delay(20):subscribe(function()
+      print('> cycle stop')
       event.push('@cycle/stop')
       getStopSubscription():unsubscribe()
     end), sink
