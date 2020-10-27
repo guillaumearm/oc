@@ -178,6 +178,8 @@ _G.flatten = function(t)
       ret[#ret + 1] = v
     end
   end
+
+  ret.n = #ret
   return ret
 end
 
