@@ -70,9 +70,9 @@ local reinstallCommand = function()
     'oppm > /dev/null',
     'ls /media/traptools > /dev/null',
     'traptools uninstall --hard',
-    'sleep 1', -- workaround
+    'sleep 2', -- workaround
     'tree /media/traptools', -- workaround
-    'sleep 1', -- workaround
+    'sleep 4', -- workaround
     'oppm install traptools /media/traptools',
     '/bin/cp -vrx --skip=.prop /media/traptools/. /',
     'traptools init',
