@@ -1,5 +1,7 @@
 local Rx = require('rx')
 
+_G.Rx = Rx
+
 _G.Subscription = Rx.Subscription
 _G.Observer = Rx.Observer
 _G.Observable = Rx.Observable
@@ -61,6 +63,30 @@ _G.interval = function(ms)
 end
 
 -------------------------------------------------------------------------------
+---- Observable new methods
+-------------------------------------------------------------------------------
+function Observable:switchMap(callback)
+  callback = callback or identity
+  return self:map(callback):switch()
+end
+
+function Observable:mapTo(...)
+  return self:map(always(...))
+end
+
+function Observable:mergeMap(callback)
+  return self:flatMap(callback)
+end
+
+function Observable:tap(callback)
+  return self:map(tap(callback))
+end
+
+function Observable:withLatestFrom(...)
+  return self:with(...)
+end
+
+-------------------------------------------------------------------------------
 ---- Subjects utilities
 -------------------------------------------------------------------------------
 _G.isSubject = function(s)
@@ -85,8 +111,4 @@ _G.combineSubscriptions = function(...)
       s:unsubscribe()
     end, subscriptions)
   end)
-end
-
-function Observable:test()
-  print('=> test ok !')
 end
