@@ -15,6 +15,7 @@ return function(sources)
       inc=always(add(1)),
       dec=always(add(-1)),
     })), 0)
+    :map(String)
     :map(View)
 
   local ui = counterValue:combineLatest(buttonPlus, buttonMinus, function(v, plus, minus)
