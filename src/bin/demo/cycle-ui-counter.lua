@@ -26,6 +26,6 @@ return function(sources)
 
   return {
     ui=ui,
-    stop=counterValue:filter(either(equals(42), equals(-42)))
+    stop=counterValue:filter(either(equals(42), equals(-42))):delay(100)
   }
 end
