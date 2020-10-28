@@ -82,3 +82,7 @@ _G.combineSubscriptions = function(...)
     end, subscriptions)
   end)
 end
+
+function Observable:test()
+  print('=> test ok !')
+end
