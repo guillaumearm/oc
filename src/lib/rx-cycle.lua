@@ -166,7 +166,9 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     reject(isNil)
   )
 
-  local resetScreenSub = Rx.Subscription.create(resetScreen);
+  local resetScreenSub = Rx.Subscription.create(function()
+    resetScreen()
+  end);
 
   local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions), resetScreenSub)
 
@@ -179,6 +181,8 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   elseif not shouldWaitForStop and shouldWaitForInterrupted then
     event.pull('interrupted');
   end
+
+  resetScreen()
 
   return finalSub
 end
