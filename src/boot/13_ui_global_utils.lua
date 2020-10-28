@@ -54,14 +54,29 @@ end)
 
 _G.withBackgroundColor = withBgColor
 
-_G.withClick = curryN(2, function(maybeFn, element)
-  local fn = isFunction(maybeFn) and maybeFn or always(maybeFn)
+-- Detect if a value is a RX subject
+local isNextable = function(x)
+  return isTable(x) and isFunction(x.onNext)
+end
 
+_G.withClick = curryN(2, function(maybeFn, element)
   local onClick = function(...)
-    if element.onClick then element.onClick(...) end
-    return fn(...)
+    if isFunction(element.onClick) then
+      element.onClick(...)
+    elseif isNextable(element.onClick) then
+      element.onClick:onNext(...)
+    end
+
+    if isFunction(maybeFn) then
+      return maybeFn(...)
+    elseif isNextable(maybeFn) then
+      maybeFn:onNext(...)
+    end
+
+    return ...
   end
-    return merge(element, { onClick=onClick })
+
+  return merge(element, { onClick=onClick })
 end)
 
 _G.withOnClick = withClick

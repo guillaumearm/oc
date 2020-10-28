@@ -17,6 +17,10 @@ _G.of = Rx.Observable.of
 _G.throw = Rx.Observable.throw
 
 _G.isObservable = function(obs)
+  if isNotTable(obs) then
+    return false
+  end
+
   obs = obs or {}
   return isFunction(obs.subscribe)
 end
