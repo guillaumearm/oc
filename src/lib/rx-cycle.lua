@@ -1,5 +1,7 @@
-local event = require('event')
 local c = require('component')
+local event = require('event')
+local shell = require('shell')
+
 local Rx = require('rx')
 
 -------------------------------------------------------------------------------
@@ -75,6 +77,7 @@ local createUiDrivers = function()
     if previousRenderedElement then
       gpu.setResolution(originalScreenWidth, originalScreenHeight)
       paint(nil)
+      shell.execute('clear')
     end
   end
 
@@ -180,8 +183,6 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   elseif not shouldWaitForStop and shouldWaitForInterrupted then
     event.pull('interrupted');
   end
-
-  resetScreen()
 
   return finalSub
 end
