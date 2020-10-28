@@ -67,15 +67,14 @@ local createUiDrivers = function()
 
     paint(element, ...)
 
-    previousRenderedElement = element
     domHandlers = domNewHandlers
     domNewHandlers = {}
   end
 
   local resetScreen = function()
     if previousRenderedElement then
-      render(nil)
       gpu.setResolution(originalScreenWidth, originalScreenHeight)
+      paint(nil)
     end
   end
 
