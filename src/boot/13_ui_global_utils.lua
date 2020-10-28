@@ -129,6 +129,12 @@ _G.toReducer = function(updater)
   end
 end
 
+_G.createAction = function(type)
+  return function(...)
+    return type, ...
+  end
+end
+
 _G.handleActions = function(actionsMap)
   return function(action, ...)
     local payloadUpdater = prop(action, actionsMap) or always(identity)

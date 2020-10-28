@@ -1314,14 +1314,6 @@ end
 
 _G.clearInterval = event.cancel
 
-
--------------------
---  ACTIONS UTILS  --
--------------------
-_G.createAction = curryN(2, function(type, payload)
-  return { type=type, payload=payload }
-end)
-
 -------------------
 
 
