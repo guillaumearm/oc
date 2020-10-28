@@ -108,6 +108,11 @@ end
 --------- UPDATERS
 --------------------------------
 
+_G.toReducer = function(updater)
+  return function(state, ...)
+    return updater(...)(state)
+  end
+end
 
 _G.handleActions = function(actionsMap)
   return function(action, ...)
@@ -198,7 +203,7 @@ _G.withFx = curryN(2, function(givenFx, updater)
     return function(state)
       local nextState, fx = update(state)
       local finalFx = ternary(Boolean(fx), pipeFx(fx, givenFx), givenFx)
-      
+
       return nextState, finalFx
     end
   end
