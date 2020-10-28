@@ -64,10 +64,27 @@ local initCommand = function()
   exec('reboot')
 end
 
+-- TODO: documentation (in man)
+local reinstallCommand = function()
+  local commands = {
+    'oppm > /dev/null',
+    'ls /media/traptools > /dev/null',
+    'traptools uninstall --hard',
+    'oppm install traptools /media/traptools/',
+    '/bin/cp -vrx --skip=.prop /media/traptools/. /',
+    'traptools init',
+    'echo done'
+  }
+
+  exec(join(' && ', commands))
+end
+
 function printUsage()
   print('Usage:')
   print('\t\t traptools init')
-  print('\t\t traptools uninstall [--safe]')
+  print('\t\t traptools uninstall [--hard]')
+  print('\t\t traptools reinstall')
+  print('\t\t traptools update')
   print('\t\t traptools help [<command>]')
   print('')
   print('type `man traptools` for more details')
@@ -79,7 +96,7 @@ if isLegacyInstallCommand then
   firstArg = 'init'
   printErr('Warning: the "' .. firstArg .. '" command is deprecated')
   printErr('Prefer use "traptools init"')
-  exec('sleep 2')
+  exec('sleep 4')
 end
 -------------------------------------------------------------------------------
 
@@ -93,12 +110,17 @@ elseif firstArg == 'uninstall' then
   else
     uninstallCommand(isHard)
   end
-  
+elseif firstArg == 'reinstall' or firstArg == 'update' then
+  reinstallCommand()
 elseif firstArg == 'help' and secondArg == 'init' then
   print('`init` - this is the postinstall script, it enables embeded daemons and reboot the computer')
 elseif firstArg == 'help' and secondArg == 'uninstall' then
   print('`uninstall`        - remove traptools from your system and backup necessary files needed by OpenOS')
   print('`uninstall --hard|-h` - hardly remove traptools, it may breaks your system!')
+elseif firstArg == 'help' and secondArg == 'reinstall' then
+  print('`reinstall` - Used to hard reinstall traptools on /media/traptools')
+elseif firstArg == 'help' and secondArg == 'update' then
+  print('`update` - alias for `traptools uninstall`')
 else
   printUsage()
 end
