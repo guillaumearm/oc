@@ -27,6 +27,8 @@ _G.Raw = function(strOrElement)
   return strOrElement
 end
 
+_G.View = Raw
+
 _G.horizontal = function(...)
   local content = arrayOf(map(Raw, pack(...)))
   return uiWrapContent(content)
@@ -61,6 +63,8 @@ _G.withClick = curryN(2, function(maybeFn, element)
   end
     return merge(element, { onClick=onClick })
 end)
+
+_G.withOnClick = withClick
 
 ----- Margins
 

@@ -1,8 +1,8 @@
 return function(sources)
-  local ui = interval(100):map(pipe(
-    String,
+  local ui = interval(100):map(compose(
+    View,
     prepend('Hello World: '),
-    Raw
+    String
   ))
 
   return {
