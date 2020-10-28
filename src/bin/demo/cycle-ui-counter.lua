@@ -1,6 +1,8 @@
 -- Counter cycle example
 
 return function(sources)
+  local initialValue = sources.initialValue or 0
+
   local clickPlus = Subject.create()
   local clickMinus = Subject.create()
 
@@ -13,16 +15,15 @@ return function(sources)
   local counterValue = clickPlus:map(always('inc'))
     :merge(clickMinus:map(always('dec')))
     :startWith('init')
-    :scan(toReducer(handleActions({
+    :scanActions({
       inc=always(add(1)),
-      dec=always(add(-1)),
-    })), 0)
+      dev=always(add(1)),
+    }, initialValue)
 
-  local ui = counterValue
-    :map(compose(View, String))
-    :combineLatest(buttonPlus, buttonMinus, function(v, plus, minus)
-      return vertical(plus, v, minus)
-    end)
+  local counterValueView = counterValue:map(compose(View, String))
+
+  local ui = combineLatest(buttonPlus, counterValueView, buttonMinus)
+    :map(vertical)
 
   return {
     ui=ui,

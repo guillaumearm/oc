@@ -46,6 +46,10 @@ _G.fromEvent = function(eventName)
   end)
 end
 
+_G.combineLatest = function(o, ...)
+  return o:combineLatest(...)
+end
+
 _G.interval = function(ms)
   return Rx.Observable.create(function(observer)
     local counter = 0
@@ -84,6 +88,10 @@ end
 
 function Observable:withLatestFrom(...)
   return self:with(...)
+end
+
+function Observable:scanActions(actionsMap, initialState)
+  return self:scan(toReducer(handleActions(actionsMap)), initialState)
 end
 
 -------------------------------------------------------------------------------
