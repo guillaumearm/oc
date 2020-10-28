@@ -52,29 +52,31 @@ local createUiDrivers = function()
   local domNewHandlers = {}
   local domHandlers = {}
 
-  local pain = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
+  local paint = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
     table.insert(domNewHandlers, { onClick=onClick, x=x, y=y, width=width, height=height })
   end)
 
   domHandlers = domNewHandlers
   domNewHandlers = {}
 
-  local firstRender = true
-
   local render = function(element, ...)
-    if element and firstRender then
-      firstRender = false;
+    local prev = previousRenderedElement
+    if not prev or prev.width ~= element.width or prev.height ~= element.height then
       gpu.setResolution(element.width, element.height)
     end
 
-    pain(element, ...)
+    paint(element, ...)
+
+    previousRenderedElement = element
     domHandlers = domNewHandlers
     domNewHandlers = {}
   end
 
   local resetScreen = function()
-    render(nil)
-    gpu.setResolution(originalScreenWidth, originalScreenHeight)
+    if previousRenderedElement then
+      render(nil)
+      gpu.setResolution(originalScreenWidth, originalScreenHeight)
+    end
   end
 
   domHandlers = domNewHandlers
@@ -104,13 +106,7 @@ local createUiDrivers = function()
     return combineSubscriptions(renderSub, touchSub)
   end
 
-  local uiClearDriver = function(sink)
-    return sink:subscribe(function()
-      resetScreen();
-    end)
-  end
-
-  return uiDriver, uiClearDriver
+  return uiDriver, resetScreen
 end
 
 
@@ -128,12 +124,11 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   end
 
   local stopDriver, setStopSubscription = createStopDriver()
-  local uiDriver, uiClearDriver = createUiDrivers()
+  local uiDriver, resetScreen = createUiDrivers()
 
   local getDefaultDrivers = withDefault({
     state=stateDriver,
     ui=uiDriver,
-    uiClear=uiClearDriver,
     print=printDriver,
     stop=stopDriver,
     noop=noopDriver
@@ -171,7 +166,9 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     reject(isNil)
   )
 
-  local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions))
+  local resetScreenSub = Rx.Subscription.create(resetScreen);
+
+  local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions), resetScreenSub)
 
   setStopSubscription(finalSub)
 
