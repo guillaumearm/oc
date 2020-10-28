@@ -867,7 +867,7 @@ _G.defaultTo = curryN(2, function(fallbackValue, v)
   return fallbackValue
 end)
 
-_G.equalsBy = curryN(2, function(comparator, a, b)
+_G.equalsBy = curryN(3, function(comparator, a, b)
   if (a == b) then return true end
 
   if isNotTable(a) or isNotTable(b) then return false end
