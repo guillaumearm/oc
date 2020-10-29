@@ -21,6 +21,10 @@ function getHexaColor(color)
     return gpu.getPaletteColor(paletteIndex)
   end
 
+  if color >= 1 and color <= 16 then
+    return gpu.getPaletteColor(color)
+  end
+
   return color
 end
 
