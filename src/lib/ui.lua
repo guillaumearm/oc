@@ -24,7 +24,7 @@ end, { width=0, height=0, shape='' })
 function computeElementDimensions(elem)
   if elem.height and elem.width then return elem end
 
-  local state = { width=0, height=0 }
+  local state = { width=0, height=0, shape='' }
 
   local newLines = map(function(line)
     line = line.content or line
