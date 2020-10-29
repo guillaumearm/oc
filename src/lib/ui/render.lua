@@ -115,7 +115,10 @@ function render(elem, style, x, y, registerEvent)
     e = e or elem
     local prev = previousRenderedElement
 
-    if prev and (e.shape ~= prev.shape) or (e and (prev.width > e.width or prev.height > e.height) or not e) then
+    local dimChanged = e and prev and (prev.width > e.width or prev.height > e.height)
+    local shapeChanged = e and prev and e.shape ~= prev.shape
+
+    if not e or dimChanged or shapeChanged then
       -- local currentStyle = getCurrentStyle()
       gpu.setForeground(getHexaColor(style.color))
       gpu.setBackground(getHexaColor(style.backgroundColor))
