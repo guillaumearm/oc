@@ -33,8 +33,8 @@ end
 local function renderPrimitive(x, y, value, parentStyle, style)
   style = merge(parentStyle, style or {})
 
-  local newColor = getHexaColor(style.color)
-  local newBgColor = getHexaColor(style.backgroundColor)
+  local newColor = getHexaColor(style.color or parentStyle.color)
+  local newBgColor = getHexaColor(style.backgroundColor or parentStyle.backgroundColor)
 
   local colorChanged = isNotNil(newColor) and notEquals(stateStyle.color, newColor)
   local bgColorChanged = isNotNil(newBgColor) and notEquals(stateStyle.backgroundColor, newBgColor)
