@@ -30,7 +30,7 @@ end
 
 ------------------------------------------------------------------------------------------------
 
-function renderPrimitive(x, y, value, parentStyle, style)
+local function renderPrimitive(x, y, value, parentStyle, style)
   style = merge(parentStyle, style or {})
 
   local newColor = getHexaColor(style.color)
@@ -55,7 +55,7 @@ end
 
 ------------------------------------------------------------------------------------------------
 
-function renderElement(elem, x, y, parentStyle, style, registerEvent)
+local function renderElement(elem, x, y, parentStyle, style, registerEvent)
   x = x or 1
   y = y or 1
   parentStyle = merge(parentStyle or defaultStyle, style or {})
@@ -92,14 +92,13 @@ end
 
 ------------------------------------------------------------------------------------------------
 
-function render(elem, style, x, y, registerEvent)
+local function render(_elem, _style, x, y, registerEvent)
   local rendered = false
   x = x or 1
   y = y or 1
   registerEvent = registerEvent or noop
-  style = merge(defaultStyle, style or {})
 
-  function prepareScreen()
+  local function prepareScreen(style)
     gpu.setForeground(getHexaColor(style.color))
     gpu.setBackground(getHexaColor(style.backgroundColor))
     stateStyle = getCurrentStyle()
@@ -110,13 +109,16 @@ function render(elem, style, x, y, registerEvent)
 
   local previousRenderedElement = nil
 
-  function paint(e)
+  local function paint(elem)
+    local elemStyle = elem and elem.style or {}
+    local style = merge(defaultStyle, elemStyle)
+
     if not rendered then
       rendered = true
-      prepareScreen()
+      prepareScreen(style)
     end
 
-    e = e or elem
+    local e = elem
     local prev = previousRenderedElement
 
     local dimChanged = e and prev and (prev.width > e.width or prev.height > e.height)
@@ -132,13 +134,10 @@ function render(elem, style, x, y, registerEvent)
     end
 
     if e then
-      local elementStyle = ternary(isString(e), nil, e.style)
-      renderElement(e, x, y, style, elementStyle, registerEvent);
+      renderElement(e, x, y, elemStyle, elemStyle, registerEvent);
       previousRenderedElement = e
     end
   end
-
-  if e then paint(e) end
   return paint
 end
 
