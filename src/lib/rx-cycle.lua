@@ -36,10 +36,10 @@ local createStopDriver = function()
       getStopSubscription():unsubscribe()
       event.push('@cycle/stop')
     end), sink
-  end, setStopSubscription
+  end, getStopSubscription, setStopSubscription
 end
 
-local createUiDrivers = function()
+local createUiDrivers = function(getStopSubscription)
   local function isClicked(clickEvent)
     return function(h)
       return clickEvent.x >= h.x and clickEvent.x < h.x + h.width and clickEvent.y >= h.y and clickEvent.y < h.y + h.height
@@ -82,15 +82,22 @@ local createUiDrivers = function()
 
 
   local uiDriver = function(sink)
-    local renderSub = sink:subscribe(function(element)
-      if not (previousRenderedElement == element) then
-        render(element)
-        previousRenderedElement = element
+    local renderSub = sink:subscribe(
+      function(element) -- onNext
+        if not (previousRenderedElement == element) then
+          render(element)
+          previousRenderedElement = element
+        end
+      end,
+      function(err) -- onError
+        getStopSubscription():unsubscribe();
+        -- resetScreen(); -- not needed because the stop subscription will already call `resetScreen` function
+        printErr(err)
       end
-    end)
+    )
 
     local touchSub = fromEvent('touch'):subscribe(function(...)
-      local eName, id, x, y, type, user = ...
+      local _, id, x, y, type, user = ...
 
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
       local h = find(isClicked(clickEvent), domHandlers)
@@ -122,8 +129,8 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     shouldWaitForInterrupted = true
   end
 
-  local stopDriver, setStopSubscription = createStopDriver()
-  local uiDriver, resetScreen = createUiDrivers()
+  local stopDriver, getStopSubscription, setStopSubscription = createStopDriver()
+  local uiDriver, resetScreen = createUiDrivers(getStopSubscription)
 
   local getDefaultDrivers = withDefault({
     state=stateDriver,
