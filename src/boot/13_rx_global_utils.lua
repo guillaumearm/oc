@@ -73,6 +73,10 @@ function Observable:switchMap(callback)
   return self:map(callback):switch()
 end
 
+function Observable:switchMapTo(o)
+  return self:map(always(o)):switch()
+end
+
 function Observable:mapTo(...)
   return self:map(always(...))
 end
