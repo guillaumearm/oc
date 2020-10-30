@@ -2,7 +2,7 @@ local colors = require('colors')
 local c = require('component')
 local gpu = c.gpu
 
-function getCurrentStyle()
+local function getCurrentStyle()
   return {
     color=gpu.getForeground(),
     backgroundColor=gpu.getBackground()
@@ -12,7 +12,7 @@ end
 local stateStyle = getCurrentStyle()
 local defaultStyle = clone(stateStyle)
 
-function getHexaColor(color)
+local function getHexaColor(color)
   if color == nil then return nil end
 
   if isString(color) then
@@ -124,13 +124,23 @@ local function render(_elem, _style, x, y, registerEvent)
     local dimChanged = e and prev and (prev.width > e.width or prev.height > e.height)
     local shapeChanged = e and prev and e.shape ~= prev.shape
 
+    -- TODO: refactor this logic
     if not e or dimChanged or shapeChanged then
-      -- local currentStyle = getCurrentStyle()
+      local concernedElement = e or prev
+
       gpu.setForeground(getHexaColor(style.color))
       gpu.setBackground(getHexaColor(style.backgroundColor))
-      gpu.fill(x, y, prev.width, prev.height, ' ')
-      gpu.setForeground(stateStyle.color)
-      gpu.setBackground(stateStyle.backgroundColor)
+
+      if not e then
+        stateStyle = getCurrentStyle()
+      end
+
+      gpu.fill(x, y, concernedElement.width, concernedElement.height, ' ')
+
+      if e then
+        gpu.setForeground(stateStyle.color)
+        gpu.setBackground(stateStyle.backgroundColor)
+      end
     end
 
     if e then
