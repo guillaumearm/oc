@@ -52,13 +52,12 @@ local createUiDrivers = function()
   local originalScreenWidth, originalScreenHeight = gpu.getResolution()
 
   local domNewHandlers = {}
-  local domHandlers = {}
 
   local paint = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
     table.insert(domNewHandlers, { onClick=onClick, x=x, y=y, width=width, height=height })
   end)
 
-  domHandlers = domNewHandlers
+  local domHandlers = domNewHandlers
   domNewHandlers = {}
 
   local render = function(element, ...)
@@ -81,8 +80,6 @@ local createUiDrivers = function()
     end
   end
 
-  domHandlers = domNewHandlers
-  domNewHandlers = {}
 
   local uiDriver = function(sink)
     local renderSub = sink:subscribe(function(element)
@@ -141,6 +138,7 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   local sinksSubjects = map(function() return Rx.Subject.create() end, drivers)
 
   local allDriverResults = mapIndexed(function(s, k)
+    -- TODO: check errors when exec the driver
     local subOrSources, driverSources = drivers[k](s)
     if isSubscription(subOrSources) then
       return { subscription=subOrSources, sources=driverSources }
@@ -153,6 +151,7 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     reject(isNil)
   )
 
+  -- TODO: check errors when exec the driver
   local sinks = cycle(sources) or {}
 
   local driverSubscriptions = applyTo(allDriverResults)(
