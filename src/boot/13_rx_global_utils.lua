@@ -91,8 +91,21 @@ function Observable:withLatestFrom(...)
 end
 
 function Observable:shareReplay(bufferSize)
+  bufferSize = bufferSize or 1
+
   return Observable.create(function(observer)
     local subject = Rx.ReplaySubject.create(bufferSize)
+
+    local selfSub = self:subscribe(subject)
+    local subjectSub = subject:subscribe(observer)
+
+    return combineSubscriptions(selfSub, subjectSub)
+  end)
+end
+
+function Observable:share()
+  return Observable.create(function(observer)
+    local subject = Rx.Subject.create()
 
     local selfSub = self:subscribe(subject)
     local subjectSub = subject:subscribe(observer)
