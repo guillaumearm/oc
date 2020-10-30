@@ -1,6 +1,7 @@
 local c = require('component')
 local event = require('event')
 local shell = require('shell')
+local logger = require('log')('lib/rx-cycle')
 
 local Rx = require('rx')
 
@@ -80,21 +81,22 @@ local createUiDrivers = function(getStopSubscription)
     end
   end
 
+  local renderObserver = Rx.Observer.create(
+    logger.wrap(function(element) -- onNext
+      if not (previousRenderedElement == element) then
+        render(element)
+        previousRenderedElement = element
+      end
+    end),
+    function(err) -- onError
+      getStopSubscription():unsubscribe();
+      -- resetScreen(); -- not needed because the stop subscription will already call `resetScreen` function
+      printErr(err)
+    end
+  )
 
   local uiDriver = function(sink)
-    local renderSub = sink:subscribe(
-      function(element) -- onNext
-        if not (previousRenderedElement == element) then
-          render(element)
-          previousRenderedElement = element
-        end
-      end,
-      function(err) -- onError
-        getStopSubscription():unsubscribe();
-        -- resetScreen(); -- not needed because the stop subscription will already call `resetScreen` function
-        printErr(err)
-      end
-    )
+    local renderSub = sink:subscribe(renderObserver)
 
     local touchSub = fromEvent('touch'):subscribe(function(...)
       local _, id, x, y, type, user = ...
@@ -158,8 +160,10 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     reject(isNil)
   )
 
-  -- TODO: check errors when exec the driver
+  -- TODO: check errors when exec the cycle
   local sinks = cycle(sources) or {}
+  -- local ok, sinks = xpcall(cycle, debug.traceback, sources)
+  -- sinks = sinks or {}
 
   local driverSubscriptions = applyTo(allDriverResults)(
     pluck('subscription'),
