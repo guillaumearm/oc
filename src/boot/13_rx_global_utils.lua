@@ -90,6 +90,17 @@ function Observable:withLatestFrom(...)
   return self:with(...)
 end
 
+function Observable:shareReplay(bufferSize)
+  return Observable.create(function(observer)
+    local subject = Rx.ReplaySubject.create(bufferSize)
+
+    local selfSub = self:subscribe(subject)
+    local subjectSub = subject:subscribe(observer)
+
+    return combineSubscriptions(selfSub, subjectSub)
+  end)
+end
+
 function Observable:scanActions(actionsMap, initialState)
   return self:scan(toReducer(handleActions(actionsMap)), initialState)
 end
