@@ -35,7 +35,6 @@ local createStopDriver = function()
   return function(sink)
     return sink:subscribe(function()
       getStopSubscription():unsubscribe()
-      event.push('@cycle/stop')
     end), sink
   end, getStopSubscription, setStopSubscription
 end
@@ -90,7 +89,6 @@ local createUiDrivers = function(getStopSubscription)
     end),
     function(err) -- onError
       getStopSubscription():unsubscribe();
-      -- resetScreen(); -- not needed because the stop subscription will already call `resetScreen` function
       printErr(err)
     end
   )
@@ -147,7 +145,6 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   local sinksSubjects = map(function() return Rx.Subject.create() end, drivers)
 
   local allDriverResults = mapIndexed(function(s, k)
-    -- TODO: check errors when exec the driver
     local subOrSources, driverSources = drivers[k](s)
     if isSubscription(subOrSources) then
       return { subscription=subOrSources, sources=driverSources }
@@ -160,10 +157,7 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     reject(isNil)
   )
 
-  -- TODO: check errors when exec the cycle
   local sinks = cycle(sources) or {}
-  -- local ok, sinks = xpcall(cycle, debug.traceback, sources)
-  -- sinks = sinks or {}
 
   local driverSubscriptions = applyTo(allDriverResults)(
     pluck('subscription'),
@@ -182,7 +176,16 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
     resetScreen()
   end);
 
-  local finalSub = combineSubscriptions(values(driverSubscriptions), values(sinkSubscriptions), resetScreenSub)
+  local ensureStopSub = Rx.Subscription.create(function()
+    event.push('@cycle/stop')
+  end);
+
+  local finalSub = combineSubscriptions(
+    values(driverSubscriptions),
+    values(sinkSubscriptions),
+    resetScreenSub,
+    ensureStopSub
+  )
 
   setStopSubscription(finalSub)
 
