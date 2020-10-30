@@ -94,18 +94,31 @@ function Observable:withLatestFrom(...)
 end
 
 -- private share function
-local shareWithSubject = function(this, subject)
+local shareWithSubject = function(this, givenSubject)
+  local subjectFactory = when(isNotFunction, always)(givenSubject)
+
   local refCount = 0
+  local _subject = nil
   local thisSub = nil
 
-  return Observable.create(function(observer)
-    refCount = refCount + 1
+  local getSubject = function()
+    if not _subject or _subject.stopped then
+      _subject = subjectFactory()
+    end
 
-    if refCount == 0 then
+    return _subject
+  end
+
+  return Observable.create(function(observer)
+    local subject = getSubject()
+
+    if not thisSub then
       thisSub = this:subscribe(subject)
     end
 
-    local subjectSub = subject:subscribe(observer)
+    refCount = refCount + 1
+
+    local subjectSub = _subject:subscribe(observer)
 
     return Rx.Subscription.create(function()
       refCount = refCount - 1
