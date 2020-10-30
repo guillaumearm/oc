@@ -70,7 +70,6 @@ end
 ---- Observable new methods
 -------------------------------------------------------------------------------
 function Observable:switchMap(callback)
-  callback = callback or identity
   return self:map(callback):switch()
 end
 
@@ -90,28 +89,40 @@ function Observable:withLatestFrom(...)
   return self:with(...)
 end
 
-function Observable:shareReplay(bufferSize)
-  bufferSize = bufferSize or 1
+-- private share function
+local shareWithSubject = function(this, subject)
+  local refCount = 0
+  local thisSub = nil
 
   return Observable.create(function(observer)
-    local subject = Rx.ReplaySubject.create(bufferSize)
+    refCount = refCount + 1
 
-    local selfSub = self:subscribe(subject)
+    if refCount == 0 then
+      thisSub = this:subscribe(subject)
+    end
+
     local subjectSub = subject:subscribe(observer)
 
-    return combineSubscriptions(selfSub, subjectSub)
+    return Rx.Subscription.create(function()
+      refCount = refCount - 1
+      subjectSub:unsubscribe();
+
+      if thisSub and refCount == 0 then
+        thisSub:unsubscribe();
+        thisSub = nil
+      end
+    end)
   end)
 end
 
+function Observable:shareReplay(bufferSize)
+  bufferSize = bufferSize or 1
+
+  return shareWithSubject(self, Rx.ReplaySubject.create(bufferSize))
+end
+
 function Observable:share()
-  return Observable.create(function(observer)
-    local subject = Rx.Subject.create()
-
-    local selfSub = self:subscribe(subject)
-    local subjectSub = subject:subscribe(observer)
-
-    return combineSubscriptions(selfSub, subjectSub)
-  end)
+  return shareWithSubject(self, Rx.Subject.create())
 end
 
 function Observable:scanActions(actionsMap, initialState)
