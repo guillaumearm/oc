@@ -1,7 +1,7 @@
 local c = require('component')
 local event = require('event')
 local shell = require('shell')
-local logger = require('log')('lib/rx-cycle')
+local logger = require('log')('lib/cycle')
 
 local Rx = require('rx')
 

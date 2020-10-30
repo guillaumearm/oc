@@ -23,7 +23,7 @@ AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   libui-demo
   rx
   rx-extra*
-  rx-cycle*
+  cycle*
 
 
 Uninstall

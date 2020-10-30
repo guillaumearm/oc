@@ -12,7 +12,7 @@ local PACKAGE_LIST = {
   'fs-extra',
   'rx',
   'rx-extra',
-  'rx-cycle',
+  'cycle',
   "openos-patches",
   "libui",
   "libui-demo",

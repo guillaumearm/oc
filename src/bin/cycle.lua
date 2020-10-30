@@ -1,6 +1,6 @@
 local os = require('os')
 local shell = require('shell')
-local runCycle = require('rx-cycle')
+local runCycle = require('cycle')
 
 local args = pack(...)
 
