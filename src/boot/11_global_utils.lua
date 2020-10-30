@@ -749,7 +749,7 @@ _G.isString = is('string')
 _G.isTable = is('table')
 
 _G.isArray = function(x)
-  return isTable(x) and isNumber(x.n)
+  return isTable(x) and (Boolean(x[1]) or isEmpty(x))
 end
 
 _G.isNumber = is('number')
