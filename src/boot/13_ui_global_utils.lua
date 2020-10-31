@@ -29,6 +29,8 @@ end
 
 _G.View = Raw
 
+_G.EmptyView = View('')
+
 _G.horizontal = function(...)
   local content = arrayOf(map(Raw, pack(...)))
   return uiWrapContent(content)
@@ -42,6 +44,11 @@ _G.withStyle = curryN(2, function(style, element)
   local initialStyle = element.style or {}
   local finalStyle = merge(initialStyle, style)
   return merge(element, { style=finalStyle })
+end)
+
+_G.withContent = curryN(2, function(txtOrElem, element)
+  local newElemContent = isString(txtOrElem) and View(txtOrElem).content or element.content
+  return merge(element, { content=newElemContent })
 end)
 
 _G.withColor = curryN(2, function(color, element)

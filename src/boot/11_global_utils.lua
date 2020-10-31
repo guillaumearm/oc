@@ -1,11 +1,8 @@
 ---------------------------------------------------------------------------
-------------  Name: global-utils v0.15
+------------  Name: global-utils v0.17
 ------------  Description: Global functional utilities
 ------------  Author: Trapcodien
 ---------------------------------------------------------------------------
-
-local serialization = require('serialization')
-local event = require('event')
 
 local function concatTable(t1, t2)
   local t1length = #t1
@@ -320,6 +317,10 @@ end)
 _G.ensureTable = function(x)
   if isTable(x) then return x end
   return arrayOf(x)
+end
+
+_G.ensureFunction = function(x)
+  return when(isNotFunction, always)(x)
 end
 
 _G.isWhitespace = function(v)
@@ -927,14 +928,18 @@ _G.anyPass = curryN(2, function(predicates, value)
   return reduce(reducer, false, predicates)
 end)
 
-_G.identity = function(x) return x end
+_G.identity = function(...) return ... end
+
 _G.noop = function() end
+
 _G.always = function(...)
   local args = pack(...)
   return function()
     return unpack(args)
   end
 end
+
+_G.const = always
 
 _G.tap = function(f)
   return function(...)
@@ -1108,6 +1113,7 @@ end
 _G.map = curryN(2, function(f, t)
   if isNull(t) then return null end
   if isString(t) then return mapString(f, t) end
+  if isFunction(t.map) then return t:map(f) end
 
   local ret = {}
   ret.n = t.n
@@ -1302,25 +1308,31 @@ _G.sortDescBy = sortByWith(flip(gt))
 _G.setTimeout = function(cb, ms)
   ms = ms or 0
   local sec = ms / 1000
-  return event.timer(sec, cb, 1)
+  return require('event').timer(sec, cb, 1)
 end
 
 _G.setImmediate = function(cb)
   return setTimeout(cb, 0)
 end
 
-_G.clearTimeout = event.cancel
+_G.clearTimeout = function(...)
+  return require('event').cancel(...)
+end
 
 _G.setInterval = function(cb, ms)
   ms = ms or 0
   local sec = ms / 1000
-  return event.timer(sec, cb, math.huge)
+  return require('event').timer(sec, cb, math.huge)
 end
 
-_G.clearInterval = event.cancel
+_G.clearInterval = clearTimeout
 
 -------------------
 
+
+-----------------------------
+--  DEBUG/PARSE/STRINGIFY  --
+-----------------------------
 
 local function dumpTable(tbl, indent)
   if not (type(tbl) == 'table') then
@@ -1353,10 +1365,15 @@ _G.dump = function(...)
   return ...
 end
 
-_G.serialize = serialization.serialize
+_G.serialize = function(...)
+  return require('serialization').serialize(...)
+end
+
 _G.stringify = serialize
 
-_G.unserialize = serialization.unserialize
+_G.unserialize = function(...)
+  return require('serialization').unserialize(...)
+end
 _G.parse = unserialize
 
 _G.safeParse = function(x)
@@ -1392,4 +1409,91 @@ end
 _G.printExitSuccess = function(...)
   print(...)
   require('os').exit(0)
+end
+
+-- -----------------------------
+
+-- ------------------
+-- --  COROUTINES  --
+-- ------------------
+_G.yield = coroutine.yield
+
+-- -------------------------
+-- --  monadic try/catch  --
+-- -------------------------
+
+--- @class Try
+-- @description try/catch as a monad
+local Try = {}
+Try.__index = Try
+Try.__tostring = always('Try')
+
+_G.try = setmetatable({}, Try)
+
+function Try:__call(...)
+  local fxs = pack(...)
+
+  local tryProperties = reduce(function(state, maybeFx)
+    local result = { maybeFx }
+    local status = state._status
+
+    if not status then return state end
+
+    if isFunction(maybeFx) then
+      local callResult = pack(pcall(maybeFx))
+      status = first(callResult)
+      result = tail(callResult)
+    end
+
+    if not status then
+      return { _status=false, _result=result }
+    end
+
+    return { _status=true, _result=concat(state._result, result) }
+  end, { _status=true, _result={} }, fxs)
+
+  return setmetatable(tryProperties, Try)
+end
+
+function Try:map(callback)
+  if self._status then
+    callback = callback or identity
+    return try(function()
+      return callback(unpack(self._result))
+    end)
+  end
+  return self
+end
+
+function Try:catch(callback)
+  if not self._status then
+    callback = callback or identity
+    return try(function()
+      return callback(unpack(self._result))
+    end)
+  end
+  return self
+end
+
+function Try:tap(callback)
+  callback = callback or identity
+  return self:map(function(...)
+    callback(...)
+    return ...
+  end)
+end
+
+function Try:extract()
+  if not self._status then
+    error(unpack(self._result))
+  end
+  return unpack(self._result)
+end
+
+function Try:pack()
+  return self:map(pack)
+end
+
+function Try:unpack()
+  return self:map(unpack)
 end
