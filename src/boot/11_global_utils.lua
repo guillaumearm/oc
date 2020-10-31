@@ -301,13 +301,6 @@ _G.abs = math.abs
 _G.negate = function(x) return -x end
 
 _G.arrayOf = function(v) return {v} end
-_G.just = arrayOf
-_G.none = function() return null end
-
-_G.maybe = function(x)
-  if isNotNil(x) then return just(x) end
-  return null
-end
 
 _G.getValueOr = curryN(2, function(placeholder, m)
   if isEmpty(m) then return placeholder end
@@ -1424,6 +1417,7 @@ _G.yield = coroutine.yield
 
 --- @class Try
 -- @description try/catch as a monad
+-- TODO: flatMap (join) method
 local Try = {}
 Try.__index = Try
 Try.__tostring = always('Try')
@@ -1508,4 +1502,148 @@ end
 
 function Try:unpack()
   return self:map(unpack)
+end
+
+-- -------------------------
+-- --  monadic maybe  ------
+-- -------------------------
+
+-- _G.just = arrayOf
+-- _G.none = function() return null end
+-- _G.maybe = function(x)
+--   if isNotNil(x) then return just(x) end
+--   return null
+-- end
+
+_G.isMaybe = function(m)
+  return Boolean(m and isTable(m) and m._data and isTable(m._data))
+end
+
+local Maybe = {}
+Maybe.__index = Maybe
+
+function Maybe:__tostring()
+  dump(self._data)
+  if isEmpty(self._data) then return 'None' end
+  return 'Just(' .. join(', ', self._data) .. ')'
+end
+
+_G.Maybe = setmetatable({}, Maybe)
+
+function Maybe:__call(...)
+  local noneFound = false;
+  local data = {}
+
+  forEach(function(maybeMaybe)
+    local value = { maybeMaybe }
+
+    if isMaybe(maybeMaybe) then
+      value = maybeMaybe:pack():extract()
+    end
+
+    if isEmpty(value) then
+      noneFound = true
+      return stop
+    end
+
+    data = concat(data, value)
+  end, pack(...))
+
+  if noneFound then
+    return none
+  end
+
+  return setmetatable({ _data=data }, Maybe)
+end
+
+_G.maybe = setmetatable({}, Maybe)
+_G.none = setmetatable({ _data={} }, Maybe)
+_G.just = maybe
+
+function Maybe:map(callback)
+  callback = callback or identity
+  if isEmpty(self._data) then
+    return self
+  end
+
+  return maybe(callback(unpack(self._data)))
+end
+
+function Maybe:tap(callback)
+  callback = callback or identity
+  return self:map(function(...)
+    callback(...)
+    return ...
+  end)
+end
+
+function Maybe:extract()
+  return unpack(self._data)
+end
+
+function Maybe:get()
+  return self:extract()
+end
+
+function Maybe:defaultTo(...)
+  if isEmpty(self._data) then
+    return maybe(...)
+  end
+
+  return self
+end
+
+function Maybe:fallbackTo(...)
+  return self:defaultTo(...)
+end
+
+function Maybe:flatMap(callback)
+  if isEmpty(self._data) then
+    return self
+  end
+
+  return maybe(callback(unpack(self._data)))
+end
+
+function Maybe:join(callback)
+  return self:flatMap(callback)
+end
+
+function Maybe:concat(...)
+  return maybe(...)
+end
+
+function Maybe:pack()
+  return self:map(pack)
+end
+
+function Maybe:unpack()
+  return self:map(unpack)
+end
+
+-- -------------------------
+-- --  free monad  ---------
+-- -------------------------
+-- ! for now it works only with the maybe monad
+
+-- an attempt to make a do notation style with coroutines ;-)
+_G.Do = function(coroutineDefinition)
+  local co = coroutine.create(coroutineDefinition)
+  local shouldContinue = true
+
+  local monad = none
+
+  while(shouldContinue) do
+    shouldContinue, monad = coroutine.resume(co, monad:extract())
+    monad = maybe(monad)
+
+    local packedValues = monad:pack():extract()
+    if shouldContinue and isEmpty(packedValues) then
+      shouldContinue = false
+    elseif shouldContinue and coroutine.status(co) == 'dead' then
+      shouldContinue = false
+    end
+  end
+
+  return monad
 end
