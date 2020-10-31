@@ -81,6 +81,28 @@ end)
 
 _G.withOnClick = withClick
 
+_G.withClickOutside = curryN(2, function(maybeFn, element)
+  local onClickOutside = function(...)
+    if isFunction(element.onClickOutside) then
+      element.onClickOutside(...)
+    elseif isNextable(element.onClickOutside) then
+      element.onClickOutside:onNext(...)
+    end
+
+    if isFunction(maybeFn) then
+      return maybeFn(...)
+    elseif isNextable(maybeFn) then
+      maybeFn:onNext(...)
+    end
+
+    return ...
+  end
+
+  return merge(element, { onClickOutside=onClickOutside })
+end)
+
+_G.withOnClickOutside = _withClickOutside
+
 ----- Margins
 
 _G.withMarginLeft = curryN(2, function(n, element)

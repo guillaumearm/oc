@@ -237,6 +237,8 @@ globals={
   "withBackgroundColor",
   "withClick",
   "withOnClick",
+  "withClickOutside",
+  "withOnClickOutside",
   "withMarginLeft",
   "dispatch",
   "stopUI",
