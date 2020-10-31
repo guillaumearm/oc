@@ -1,9 +1,8 @@
 -- Counter cycle example
 
-local colors = require('colors')
-local runCycle = require('rx-cycle')
+local runCycle = require('cycle')
 
-local c = require('component')
+local beep = require('component').computer.beep
 
 local Counter = function(initialValue)
   initialValue = initialValue or 0
@@ -29,7 +28,7 @@ local Counter = function(initialValue)
 
   local ui = combineLatest(buttonPlus, counterValueView, buttonMinus):map(vertical)
 
-  return ui:map(withClick(cb(c.computer.beep))):shareReplay(1)
+  return ui:map(withClick(cb(beep))):shareReplay(1)
 end
 
 local function mainCycle()
@@ -60,6 +59,4 @@ local function mainCycle()
   }
 end
 
--- runCycle(mainCycle, {}, true, true):unsubscribe()
-
-return mainCycle
+runCycle(mainCycle, {}, true, true):unsubscribe()
