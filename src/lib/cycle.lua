@@ -46,6 +46,10 @@ local createUiDrivers = function(getStopSubscription)
     end
   end
 
+  function isNotClicked(clickEvent)
+    return complement(isClicked(clickEvent))
+  end
+
   local gpu = c.gpu
 
   local previousRenderedElement = nil
@@ -53,8 +57,8 @@ local createUiDrivers = function(getStopSubscription)
 
   local domNewHandlers = {}
 
-  local paint = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
-    table.insert(domNewHandlers, { onClick=onClick, x=x, y=y, width=width, height=height })
+  local paint = require('ui/render')(nil, nil, nil, nil, function(elem, x, y, width, height)
+    table.insert(domNewHandlers, { onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height })
   end)
 
   local domHandlers = domNewHandlers
@@ -100,13 +104,25 @@ local createUiDrivers = function(getStopSubscription)
       local _, id, x, y, type, user = ...
 
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
-      local h = find(isClicked(clickEvent), domHandlers)
 
-      if h and isSubject(h.onClick) then
-        h.onClick:onNext(clickEvent)
-      elseif h and isFunction(h.onClick) then
-        h.onClick(clickEvent)
+      -- detech regular click
+      local foundClick = find(isClicked(clickEvent), domHandlers)
+
+      if foundClick and isSubject(foundClick.onClick) then
+        foundClick.onClick:onNext(clickEvent)
+      elseif foundClick and isFunction(foundClick.onClick) then
+        foundClick.onClick(clickEvent)
       end
+
+      -- detect click outside
+      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickElement)), handlers)
+      forEach(function(h)
+        if isSubject(h.onClickOutside) then
+          h.onClickOutside:onNext(clickEvent)
+        elseif isFunction(h.onClickOutside) then
+          h.onClickOutside(clickEvent)
+        end
+      end, filteredHandlers)
     end)
 
     return combineSubscriptions(renderSub, touchSub)

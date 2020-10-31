@@ -911,11 +911,11 @@ _G.notDeepEquals = curryN(2, function(a, b)
 end)
 
 _G.both = curryN(3, function(predicate1, predicate2, value)
-  return predicate1(value) and predicate2(value)
+  return Boolean(predicate1(value) and predicate2(value))
 end)
 
 _G.either = curryN(3, function(predicate1, predicate2, value)
-  return predicate1(value) or predicate2(value)
+  return Boolean(predicate1(value) or predicate2(value))
 end)
 
 _G.allPass = curryN(2, function(predicates, value)

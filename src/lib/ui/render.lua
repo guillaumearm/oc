@@ -83,8 +83,8 @@ local function renderElement(elem, x, y, parentStyle, style, registerEvent)
     state.y = state.y + line.height
   end, elem.content)
 
-  if elem.onClick then
-    registerEvent(elem.onClick, x, y, stateDim.width, stateDim.height)
+  if elem.onClick or elem.onClickOutside then
+    registerEvent(elem, x, y, stateDim.width, stateDim.height)
   end
 
   return stateDim

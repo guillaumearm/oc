@@ -10,6 +10,10 @@ function isClicked(clickEvent)
   end
 end
 
+function isNotClicked(clickEvent)
+  return complement(isClicked(clickEvent))
+end
+
 function runUI(view, updater, handler, ...)
   handler = handler or noop
   local events = concat({ 'touch', 'ui' }, pack(...))
@@ -19,8 +23,8 @@ function runUI(view, updater, handler, ...)
   local newHandlers = {}
   local handlers = {}
 
-  local repaint = require('ui/render')(nil, nil, nil, nil, function(onClick, x, y, width, height)
-    table.insert(newHandlers, { onClick=onClick, x=x, y=y, width=width, height=height })
+  local repaint = require('ui/render')(nil, nil, nil, nil, function(elem, x, y, width, height)
+    table.insert(newHandlers, { onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height })
   end)
 
   handlers = newHandlers
@@ -59,7 +63,7 @@ function runUI(view, updater, handler, ...)
       local element = view(state)
       if not (previousRenderedElement == element) then
         render(element)
-        previousRenderedElement = element      
+        previousRenderedElement = element
       end
     end
 
@@ -77,13 +81,27 @@ function runUI(view, updater, handler, ...)
     if eName == 'touch' then
       local id, x, y, type, user = ...
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
-      local h = find(isClicked(clickEvent), handlers)
-      if h then
-        local clickResult = pack(h.onClick(clickEvent))
+
+      -- detech regular click
+      local foundHandler = find(isClicked(clickEvent), handlers)
+      if foundHandler then
+        local clickResult = pack(foundHandler.onClick(clickEvent))
+
         if isNotEmpty(clickResult) then
           eventApi.push('ui', unpack(clickResult))
         end
       end
+
+      -- detect click outside
+      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickElement)), handlers)
+
+      forEach(function(h)
+        local clickOutsideResult = pack(h.onClickOutside(clickEvent))
+
+        if isNotEmpty(clickOutsideResult) then
+          eventApi.push('ui', unpack(clickOutsideResult))
+        end
+      end, filteredHandlers)
     else
       handler(prevState, state, eName, ...)
     end
