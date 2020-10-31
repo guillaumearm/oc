@@ -232,7 +232,7 @@ end)
 
 -- return an updater that does not update the state but apply the given fx
 _G.justFx = function(fx)
-  return function(...)
+  return function()
     return function(state)
       return state, fx
     end

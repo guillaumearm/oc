@@ -59,8 +59,8 @@ local function simpleCompose(f, g)
   end
 end
 
-_G.fst = function(a, b) return a end
-_G.snd = function(a, b) return b end
+_G.fst = function(a, _) return a end
+_G.snd = function(_, b) return b end
 
 _G.pipe = function(f, g, ...)
   if g == nil then return f end
@@ -146,7 +146,7 @@ _G.length = function(t)
 
   local largerIndex = 0
 
-  for k,v in pairs(t) do
+  for k,_ in pairs(t) do
     if type(k) == 'number' and k > largerIndex then
       largerIndex = k
     end
@@ -206,7 +206,7 @@ _G.countWhen = curryN(2, function(predicate, t)
   local i = 0
 
   forEach(function(v, k)
-    if predicate(v, k) then 
+    if predicate(v, k) then
       i = i + 1
     end
   end, t)
@@ -300,7 +300,7 @@ _G.min = curryN(2, function(a, b)
   return math.min(a, b)
 end)
 
-_G.abs = math.max
+_G.abs = math.abs
 
 _G.negate = function(x) return -x end
 
@@ -374,7 +374,7 @@ _G.setProp = curryN(3, function(k, v, t)
   return newTable
 end)
 
-_G.setNonNilProps = curryN(3, function(k, v, t)
+_G.setNonNilProp = curryN(3, function(k, v, t)
   if isString(t) and isNotNil(prop(k, t)) then
     return replaceCharAt(k, v, t)
   end
@@ -582,7 +582,7 @@ _G.dropUntil = curryN(2, function(predicate, t)
   local shouldDrop = true
   local i = 1
 
-  forEachIndex(function(v, k)
+  forEachIndexed(function(v, k)
     if shouldDrop then
       shouldDrop = not predicate(v, k)
     end
@@ -616,7 +616,7 @@ _G.takeUntil = curryN(2, function(predicate, t)
   local i = 1
   local shouldTake = true
 
-  forEachIndex(function(v, k)
+  forEachIndexed(function(v, k)
     shouldTake = not predicate(v, k)
     if not shouldTake then return stop end
     ret[i] = v
@@ -944,13 +944,15 @@ _G.tap = function(f)
   end
 end
 
-_G.callMethod = function(name, ...)
+_G.method = function(name, ...)
   local args = pack(...)
 
   return function(obj)
     return obj[name](obj, unpack(args))
   end
 end
+
+_G.callMethod = method
 
 _G.add = curryN(2, function(a, b) return a + b end)
 _G.sub = curryN(2, function(a, b) return b - a end)
@@ -1047,7 +1049,7 @@ _G.forEach = curryN(2, function(f, t)
   end
 end)
 
-_G.forEachIndex = curryN(2, function(f, t)
+_G.forEachIndexed = curryN(2, function(f, t)
   if isString(t) then
     return forEach(f, t)
   end
@@ -1086,13 +1088,13 @@ end)
 
 _G.forEachLast = forEachRight
 
-_G.forEachIndexRight = curryN(2, function(f, t)
+_G.forEachIndexedRight = curryN(2, function(f, t)
   return forEachRight(function(v, k)
     return f(v, k)
   end, t)
 end)
 
-_G.forEachIndexLast = forEachIndexRight
+_G.forEachIndexedLast = forEachIndexedRight
 
 local mapString = function(f, str)
   local ret = ''
