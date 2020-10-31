@@ -42,11 +42,14 @@ end
 local createUiDrivers = function(getStopSubscription)
   local function isClicked(clickEvent)
     return function(h)
-      return clickEvent.x >= h.x and clickEvent.x < h.x + h.width and clickEvent.y >= h.y and clickEvent.y < h.y + h.height
+      return clickEvent.x >= h.x
+        and clickEvent.x < h.x + h.width
+        and clickEvent.y >= h.y
+        and clickEvent.y < h.y + h.height
     end
   end
 
-  function isNotClicked(clickEvent)
+  local function isNotClicked(clickEvent)
     return complement(isClicked(clickEvent))
   end
 
@@ -58,7 +61,9 @@ local createUiDrivers = function(getStopSubscription)
   local domNewHandlers = {}
 
   local paint = require('ui/render')(nil, nil, nil, nil, function(elem, x, y, width, height)
-    table.insert(domNewHandlers, { onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height })
+    table.insert(domNewHandlers, {
+      onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height
+    })
   end)
 
   local domHandlers = domNewHandlers

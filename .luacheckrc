@@ -1,3 +1,5 @@
+self=false
+
 globals={
   "curry",
   "curryN",
@@ -220,6 +222,8 @@ globals={
   "printErr",
   "printExit",
   "printExitSuccess",
+  "pack",
+  "unpack",
   "ui",
   "uiWrap",
   "uiWrapContent",
@@ -269,6 +273,9 @@ globals={
   "isSubject",
   "isSubscription",
   "combineSubscriptions",
-  "pack",
-  "unpack"
+  "io",
+  "os",
+  "start",
+  "reload",
+  "started"
 }

@@ -3,11 +3,13 @@ local raw_loadfile = ...
 
 local getosversion = raw_loadfile('/OSVERSION')
 
-if not (type(getosversion) == 'function') then
-  osversion = '[ERROR: unknwown OS]'
+if type(getosversion) == 'function' then
+  _G._OSVERSION = getosversion()
+else
+  _G._OSVERSION = '[ERROR: unknwown OS]'
 end
 
-_G._OSVERSION = getosversion()
+
 
 -- luacheck: globals component computer unicode _OSVERSION
 local component = component

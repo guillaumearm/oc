@@ -2,7 +2,7 @@ local fs = require("filesystem")
 local keyboard = require("keyboard")
 local shell = require("shell")
 local term = require("term") -- TODO use tty and cursor position instead of global area and gpu
-local text = require("text")
+local textApi = require("text")
 local unicode = require("unicode")
 
 -- MODIFICATION: added color scheme and syntax highlighting info
@@ -135,7 +135,10 @@ local patterns = {
 			local match = text:find('^0x%x%x%x%x%x%x$')
 
 			if match then
-				local luminosity = 0.2126 * tonumber('0x' .. text:sub(3, 4)) + 0.7152 * tonumber('0x' .. text:sub(5, 6)) + 0.0722 * tonumber('0x' .. text:sub(7, 8))
+				local luminosity = 0.2126
+					* tonumber('0x' .. text:sub(3, 4)) + 0.7152
+					* tonumber('0x' .. text:sub(5, 6)) + 0.0722
+					* tonumber('0x' .. text:sub(7, 8))
 
 				if luminosity > 20 then
 					return 0x000000, tonumber(text)
@@ -170,7 +173,7 @@ local gpu = term.gpu()
 local originalFg = gpu.setForeground(textColor)
 local originalBg = gpu.setBackground(bgColor)
 
-function resetColors()
+local function resetColors()
 	gpu.setForeground(originalFg)
 	gpu.setBackground(originalBg)
 end
@@ -296,7 +299,7 @@ local currentStatus = '' -- MODIFICATION
 local function setStatus(value)
 	local x, y, w, h = term.getGlobalArea()
 	value = unicode.wlen(value) > w - 10 and unicode.wtrunc(value, w - 9) or value
-	value = text.padRight(value, w - 10)
+	value = textApi.padRight(value, w - 10)
 	gpu.set(x, y + h - 1, value)
 
 	currentStatus = value -- MODIFICATION
@@ -308,19 +311,19 @@ local function getArea()
 	return x + currentMargin, y, w - currentMargin, h - 1 -- MODIFICATION
 end
 
-local function removePrefix(line, length)
-	if length >= unicode.wlen(line) then
-		return ""
-	else
-		local prefix = unicode.wtrunc(line, length + 1)
-		local suffix = unicode.sub(line, unicode.len(prefix) + 1)
-		length = length - unicode.wlen(prefix)
-		if length > 0 then
-			suffix = (" "):rep(unicode.charWidth(suffix) - length) .. unicode.sub(suffix, 2)
-		end
-		return suffix
-	end
-end
+-- local function removePrefix(line, length)
+-- 	if length >= unicode.wlen(line) then
+-- 		return ""
+-- 	else
+-- 		local prefix = unicode.wtrunc(line, length + 1)
+-- 		local suffix = unicode.sub(line, unicode.len(prefix) + 1)
+-- 		length = length - unicode.wlen(prefix)
+-- 		if length > 0 then
+-- 			suffix = (" "):rep(unicode.charWidth(suffix) - length) .. unicode.sub(suffix, 2)
+-- 		end
+-- 		return suffix
+-- 	end
+-- end
 
 local function lengthToChars(line, length)
 	if length > unicode.wlen(line) then
@@ -351,7 +354,7 @@ local function drawLine(x, y, w, h, lineNr)
 	if yLocal > 0 and yLocal <= h then
 		local str = removePrefix(buffer[lineNr] or "", scrollX)
 		str = unicode.wlen(str) > w and unicode.wtrunc(str, w + 1) or str
-		str = text.padRight(str, w)
+		str = textApi.padRight(str, w)
 		gpu.set(x, y - 1 + lineNr - scrollY, str)
 	end
 end
@@ -364,7 +367,7 @@ local function drawLine(x, y, w, h, lineNr)
 	if yLocal > 0 and yLocal <= h then
 		--[[local str = removePrefix(buffer[lineNr] or "", scrollX)
 		str = unicode.wlen(str) > w and unicode.wtrunc(str, w + 1) or str
-		str = text.padRight(str, w)
+		str = textApi.padRight(str, w)
 		gpu.set(x, y - 1 + lineNr - scrollY, str)]]
 
 		local colors = {}
@@ -426,7 +429,7 @@ local function drawLine(x, y, w, h, lineNr)
 		end
 
 		local i = 0
-		local cx, cy = term.getCursor()
+		local _, cy = term.getCursor()
 		local lineBg = bgColor
 
 		if cy + scrollY == lineNr then
@@ -476,7 +479,7 @@ local function getCursor()
 end
 
 local function line()
-	local cbx, cby = getCursor()
+	local _, cby = getCursor()
 	return buffer[cby]
 end
 
@@ -539,7 +542,7 @@ local function setCursor(nbx, nby)
 	term.setCursor(nbx - scrollX + currentMargin, nby - scrollY) -- MODIFICATION
 	--update with term lib
 	nbx, nby = getCursor()
-	gpu.set(x + w - 10, y + h, text.padLeft(string.format("%d,%d", nby, nbx), 10))
+	gpu.set(x + w - 10, y + h, textApi.padLeft(string.format("%d,%d", nby, nbx), 10))
 end
 
 local function highlight(bx, by, length, enabled)
@@ -568,18 +571,18 @@ local function highlight(bx, by, length, enabled)
 end
 
 local function home()
-	local cbx, cby = getCursor()
+	local _, cby = getCursor()
 	setCursor(1, cby)
 end
 
 local function ende()
-	local cbx, cby = getCursor()
+	local _, cby = getCursor()
 	setCursor(unicode.wlen(line()) + 1, cby)
 end
 
 local function left()
 	local cbx, cby = getNormalizedCursor()
-	local _, _cby = getCursor()
+	local _, _ = getCursor()
 	if cbx > 1 then
 		local wideTarget, rightTarget = isWideAtPosition(line(), cbx - 1)
 		if wideTarget and rightTarget then
@@ -599,8 +602,8 @@ local function right(n)
 	n = n or 1
 	local cbx, cby = getNormalizedCursor()
 	local be = unicode.wlen(line()) + 1
-	local wide, right = isWideAtPosition(line(), cbx + n)
-	if wide and right then
+	local wide, rightVal = isWideAtPosition(line(), cbx + n)
+	if wide and rightVal then
 		n = n + 1
 	end
 	if cbx + n <= be then
@@ -627,7 +630,7 @@ local function down(n)
 end
 
 local function delete(fullRow)
-	local cx, cy = term.getCursor()
+	local _, cy = term.getCursor()
 	local cbx, cby = getCursor()
 	local x, y, w, h = getArea()
 	local function deleteRow(row)
@@ -670,7 +673,7 @@ local function insert(value)
 		return
 	end
 	term.setCursorBlink(false)
-	local cx, cy = term.getCursor()
+	local _, _ = term.getCursor()
 	local cbx, cby = getCursor()
 	local x, y, w, h = getArea()
 	local index = lengthToChars(line(), cbx)
@@ -684,7 +687,7 @@ end
 
 local function enter()
 	term.setCursorBlink(false)
-	local cx, cy = term.getCursor()
+	local _, cy = term.getCursor()
 	local cbx, cby = getCursor()
 	local x, y, w, h = getArea()
 	local index = lengthToChars(line(), cbx)
@@ -714,8 +717,8 @@ end
 local findText = ""
 
 local function find()
-	local x, y, w, h = getArea()
-	local cx, cy = term.getCursor()
+	local _, _, _, h = getArea()
+	local _, _ = term.getCursor()
 	local cbx, cby = getCursor()
 	local ibx, iby = cbx, cby
 	while running do
@@ -766,29 +769,28 @@ end
 
 -- MODIFICATION: more functions
 
-local function fix()
-	local x, y, w, h = getArea()
+-- local function fix()
+-- 	local x, y, w, h = getArea()
 
-	gpu.fill(x, y, w, h, ' ')
+-- 	gpu.fill(x, y, w, h, ' ')
 
-	for i = 1, #buffer do
-		if i > scrollY and i <= (scrollY + h) then
-			drawLine(x, y, w, h, i)
-		end
-	end
-end
+-- 	for i = 1, #buffer do
+-- 		if i > scrollY and i <= (scrollY + h) then
+-- 			drawLine(x, y, w, h, i)
+-- 		end
+-- 	end
+-- end
 
 local function jump()
-	local x, y, w, h = getArea()
+	local _, _, _, h = getArea()
 	local cx, cy = term.getCursor()
-	local currentStatus = currentStatus
 
 	setStatus('Jump to line #')
 
 	local current = ''
 
 	while true do
-		local _, address, char, code = term.pull('key_down')
+		local _, address, char, _ = term.pull('key_down')
 
 		char = math.floor(char)
 
@@ -839,11 +841,11 @@ local keyBindHandlers = {
 	home = home,
 	eol = ende,
 	pageUp = function()
-		local x, y, w, h = getArea()
+		local _, _, _, h = getArea()
 		up(h - 1)
 	end,
 	pageDown = function()
-		local x, y, w, h = getArea()
+		local _, _, _, h = getArea()
 		down(h - 1)
 	end,
 
@@ -888,13 +890,13 @@ local keyBindHandlers = {
 		local f, reason = io.open(filename, "w")
 		if f then
 			local chars, firstLine = 0, true
-			for _, line in ipairs(buffer) do
+			for _, bufferLine in ipairs(buffer) do
 				if not firstLine then
-					line = "\n" .. line
+					bufferLine = "\n" .. bufferLine
 				end
 				firstLine = false
-				f:write(line)
-				chars = chars + unicode.len(line)
+				f:write(bufferLine)
+				chars = chars + unicode.len(bufferLine)
 			end
 			f:close()
 			local format
@@ -977,14 +979,14 @@ end
 
 local function onClipboard(value)
 	value = value:gsub("\r\n", "\n")
-	local cbx, cby = getCursor()
+	local _, _ = getCursor()
 	local start = 1
 	local l = value:find("\n", 1, true)
 	if l then
 		repeat
-			local line = string.sub(value, start, l - 1)
-			line = text.detab(line, 2)
-			insert(line)
+			local subLine = string.sub(value, start, l - 1)
+			subLine = textApi.detab(subLine, 2)
+			insert(subLine)
 			enter()
 			start = l + 1
 			l = value:find("\n", start, true)
@@ -1009,9 +1011,9 @@ do
 	if f then
 		local x, y, w, h = getArea()
 		local chars = 0
-		for line in f:lines() do
-			table.insert(buffer, line)
-			chars = chars + unicode.len(line)
+		for fileLine in f:lines() do
+			table.insert(buffer, fileLine)
+			chars = chars + unicode.len(fileLine)
 			if #buffer <= h then
 				drawLine(x, y, w, h, #buffer)
 			end
@@ -1035,8 +1037,8 @@ do
 end
 
 while running do
-	local startX = scrollX -- MODIFICATION
-	local startY = scrollY -- MODIFICATION
+	-- local startX = scrollX -- MODIFICATION
+	-- local startY = scrollY -- MODIFICATION
 	local _, startC = getCursor() -- MODIFICATION
 
 	local event, address, arg1, arg2, arg3 = term.pull()
@@ -1064,9 +1066,9 @@ while running do
 
 		-- MODIFICATION: redraw lines if needed
 
-		if startX ~= scrollX or startY ~= scrollY then
-			--fix()
-		end
+		-- if startX ~= scrollX or startY ~= scrollY then
+		-- 	--fix()
+		-- end
 
 		local _, endC = getCursor()
 		local x, y, w, h = getArea()

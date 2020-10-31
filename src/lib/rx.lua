@@ -133,7 +133,7 @@ end
 
 --- Returns an Observable that never produces values and never completes.
 function Observable.never()
-  return Observable.create(function(observer) end)
+  return Observable.create(function(_) end)
 end
 
 --- Returns an Observable that immediately produces an error.
@@ -657,8 +657,6 @@ function Observable:debounce(time, scheduler)
 
     local function wrap(key)
       return function(...)
-        local value = util.pack(...)
-
         if debounced[key] then
           debounced[key]:unsubscribe()
         end
@@ -1833,8 +1831,8 @@ function Observable.zip(...)
         values[i].n = values[i].n + 1
 
         local ready = true
-        for i = 1, count do
-          if values[i].n == 0 then
+        for j = 1, count do
+          if values[j].n == 0 then
             ready = false
             break
           end
@@ -1843,9 +1841,9 @@ function Observable.zip(...)
         if ready then
           local payload = {}
 
-          for i = 1, count do
-            payload[i] = table.remove(values[i], 1)
-            values[i].n = values[i].n - 1
+          for j = 1, count do
+            payload[j] = table.remove(values[j], 1)
+            values[j].n = values[j].n - 1
           end
 
           observer:onNext(util.unpack(payload))

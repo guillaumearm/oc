@@ -92,7 +92,7 @@ end
 
 ------------------------------------------------------------------------------------------------
 
-local function render(_elem, _style, x, y, registerEvent)
+local function render(_, _, x, y, registerEvent)
   local rendered = false
   x = x or 1
   y = y or 1

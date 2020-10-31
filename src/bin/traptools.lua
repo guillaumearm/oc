@@ -39,7 +39,7 @@ local uninstallCommand = function(isHard)
   end
 
   -- Uninstall all packages
-  for k, v in pairs(PACKAGE_LIST) do
+  for _, v in pairs(PACKAGE_LIST) do
     exec('oppm uninstall ' .. v)
   end
 
@@ -56,7 +56,7 @@ local initCommand = function()
   exec('/boot/11_global_utils');
 
   -- Enable all listed daemons
-  for k, v in pairs(DAEMONS_TO_ACTIVATE) do
+  for _, v in pairs(DAEMONS_TO_ACTIVATE) do
     exec('rc ' .. v .. ' enable')
   end
 
@@ -82,7 +82,7 @@ local reinstallCommand = function()
   exec(join(' && ', commands))
 end
 
-function printUsage()
+local function printUsage()
   print('Usage:')
   print('\t\t traptools init')
   print('\t\t traptools uninstall [--hard]')

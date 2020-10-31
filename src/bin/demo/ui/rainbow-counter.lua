@@ -43,13 +43,13 @@ end)
 
 local initialState = 0
 
-local counterUpdater = withInitialState(initialState, 
+local counterUpdater = withInitialState(initialState,
   handleActions({
     tick=always(inc),
-    increment=function(e)
+    increment=function(_)
       return add(1)
     end,
-    decrement=function(e)
+    decrement=function(_)
       return add(-1)
     end
   })

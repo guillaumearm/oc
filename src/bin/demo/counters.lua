@@ -35,8 +35,15 @@ local function mainCycle()
   local addCounter = Subject.create()
   local removeCounter = Subject.create()
 
-  local buttonAddCounter = of(View('add')):map(withOnClick(addCounter)):map(withColor('yellow')):map(withBgColor('red'))
-  local buttonRemoveCounter = of(View('del')):map(withOnClick(removeCounter)):map(withColor('blue')):map(withBgColor('red'))
+  local buttonAddCounter = of(View('add'))
+    :map(withOnClick(addCounter))
+    :map(withColor('yellow'))
+    :map(withBgColor('red'))
+
+  local buttonRemoveCounter = of(View('deletet'))
+    :map(withOnClick(removeCounter))
+    :map(withColor('blue'))
+    :map(withBgColor('red'))
 
   local counters = addCounter:mapTo('add')
     :merge(removeCounter:mapTo('remove'))
@@ -53,7 +60,10 @@ local function mainCycle()
     return combineLatest(unpack(cs)):map(horizontal)
   end):map(withBgColor('red'))
 
-  local ui = combineLatest(buttonAddCounter, buttonRemoveCounter, countersView):map(vertical):map(withBgColor('orange'))    
+  local ui = combineLatest(buttonAddCounter, buttonRemoveCounter, countersView)
+    :map(vertical)
+    :map(withBgColor('orange'))
+
   return {
     ui=ui
   }

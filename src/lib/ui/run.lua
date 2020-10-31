@@ -6,7 +6,10 @@ local gpu = c.gpu
 
 local function isClicked(clickEvent)
   return function(h)
-    return clickEvent.x >= h.x and clickEvent.x < h.x + h.width and clickEvent.y >= h.y and clickEvent.y < h.y + h.height
+    return clickEvent.x >= h.x
+      and clickEvent.x < h.x + h.width
+      and clickEvent.y >= h.y
+      and clickEvent.y < h.y + h.height
   end
 end
 
@@ -21,14 +24,15 @@ local function runUI(view, updater, handler, ...)
   local originalScreenWidth, originalScreenHeight = gpu.getResolution()
 
   local newHandlers = {}
-  local handlers = {}
 
   local repaint = require('ui/render')(nil, nil, nil, nil, function(elem, x, y, width, height)
-    table.insert(newHandlers, { onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height })
+    local h = { onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height }
+    table.insert(newHandlers, h)
   end)
 
-  handlers = newHandlers
+  local handlers = newHandlers
   newHandlers = {}
+
   local firstRender = false
 
   local render = function(element, ...)
@@ -46,9 +50,6 @@ local function runUI(view, updater, handler, ...)
     render(nil)
     gpu.setResolution(originalScreenWidth, originalScreenHeight)
   end
-
-  handlers = newHandlers
-  newHandlers = {}
 
   local eventUpdater = function(eName, ...)
     if (eName == 'ui') then

@@ -96,17 +96,18 @@ local ReactorApp = ui(function(state)
 
   local enabledButton = Button('Active (cliquer pour arreter)', 'green', 'stopAuto')
   local disabledButton = Button('Inactive (cliquer pour demarrer)', 'red', 'startAuto')
+  local B = Border(1)
 
   return {
     content={
       {Header('Reacteur')},
-      {Border(1), rightPad(w1, 'Buffer interne:'), leftPad(w2, math.floor(buffer)..'% '), Gauge(w3, buffer), Border(1)},
+      {B, rightPad(w1, 'Buffer interne:'), leftPad(w2, math.floor(buffer)..'% '), Gauge(w3, buffer), B},
       {Separator},
-      {Border(1), rightPad(w1, 'Carburant:'), leftPad(w2, math.floor(carburant)..'% '), Gauge(w3, carburant), Border(1)},
+      {B, rightPad(w1, 'Carburant:'), leftPad(w2, math.floor(carburant)..'% '), Gauge(w3, carburant), B},
       {Separator},
-      {Border(1), rightPad(w1, 'Generation:'), leftPad(w2, math.floor(rate)..' '), rightPad(w3, 'rf/tick'), Border(1)},
+      {B, rightPad(w1, 'Generation:'), leftPad(w2, math.floor(rate)..' '), rightPad(w3, 'rf/tick'), B},
       {Separator},
-      {Border(1), ternary(auto, enabledButton, disabledButton), Border(1)},
+      {B, ternary(auto, enabledButton, disabledButton), B},
       {Separator}
     }
   }
@@ -121,22 +122,6 @@ local App = ui(function(state)
 end)
 
 ------------------------------------------------------------------------------------------------
-
-local initialState = 0
-
-local counterUpdater = withInitialState(initialState,
-  handleActions({
-    tick=always(inc),
-    increment=function(e)
-      if e.type == 1 then return add(10) end
-      return add(1)
-    end,
-    decrement=function(e)
-      if e.type == 1 then return add(-10) end
-      return add(-1)
-    end
-  })
-)
 
 local reactorAutoUpdater = withInitialState(true,
   handleActions({
@@ -193,13 +178,13 @@ local tickHandler = captureAction('tick', function(prevState, state)
   end
 end)
 
-local startAutoHandler = captureAction('startAuto', function(prevState, state)
+local startAutoHandler = captureAction('startAuto', function(_, state)
   if state.reactor.buffer < maxBuffer then
     enableReactor()
   end
 end)
 
-local stopAutoHandler = captureAction('stopAuto', function(prevState, state)
+local stopAutoHandler = captureAction('stopAuto', function(_, _)
   disableReactor()
 end)
 
@@ -207,11 +192,9 @@ end)
 
 
 return function()
-  local mainUpdater = counterUpdater
-
   local intervalId = nil
 
-  local initHandler = captureAction('@init', function(prevState, state)
+  local initHandler = captureAction('@init', function(_, state)
     intervalId = setInterval(function()
       dispatch('tick')
     end, 3000)
@@ -223,7 +206,7 @@ return function()
     end
   end)
 
-  local stopHander = captureAction('@stop', function()
+  local stopHandler = captureAction('@stop', function()
     if intervalId ~= nil then
       clearInterval(intervalId)
     end

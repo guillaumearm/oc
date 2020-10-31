@@ -9,9 +9,9 @@ fse.readFile = function(path)
     return nil, error
   end
 
-  local data, error = file:read('*a')
-  if error or not data then
-    return nil, error
+  local data, readErr = file:read('*a')
+  if readErr or not data then
+    return nil, readErr
   end
 
   file:close()
@@ -22,15 +22,15 @@ fse.writeFile = function(path, data, mode)
   mode = mode or 'w'
   fs.makeDirectory(fs.path(path))
 
-  local file, error = io.open(path, mode)  
+  local file, error = io.open(path, mode)
   if error or not file then
     return false, error
   end
 
-  local ok, error = file:write(data)
-  if error or not ok then
-    return false, error
-  end 
+  local ok, writeErr = file:write(data)
+  if writeErr or not ok then
+    return false, writeErr
+  end
 
   file:close()
   return true

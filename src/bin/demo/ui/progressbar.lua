@@ -37,7 +37,7 @@ end)
 
 local initialState = 0
 
-local counterUpdater = withInitialState(initialState, 
+local counterUpdater = withInitialState(initialState,
   handleActions({
     tick=always(inc),
     increment=function(e)
@@ -64,7 +64,7 @@ return function()
     end, 1000)
   end)
 
-  local stopHander = captureAction('@stop', function()
+  local stopHandler = captureAction('@stop', function()
     if intervalId ~= nil then
       clearInterval(intervalId)
     end

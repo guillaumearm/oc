@@ -1,4 +1,4 @@
-return function(sources)
+return function()
   local ui = interval(100):map(compose(
     View,
     prepend('Hello World: '),

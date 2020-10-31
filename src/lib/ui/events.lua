@@ -4,7 +4,7 @@ local init = function()
   return 'ui', '@init'
 end
 
-function runEvents(events, updater, handler)
+local function runEvents(events, updater, handler)
   updater = updater or always(identity)
   handler = handler or noop
   events = events or {}
@@ -15,7 +15,7 @@ function runEvents(events, updater, handler)
   if fx then
     fx(prevState, state, init())
   end
-  
+
   handler(prevState, state, init())
 
   while true do

@@ -25,7 +25,7 @@ local createLogger = function(loggerName, withStackTrace)
 
   log.wrap = function(fn)
     return function(...)
-      local resultArgs = nil
+      local resultArgs
       if withStackTrace then
         resultArgs = pack(xpcall(fn, debug.traceback, ...))
       else

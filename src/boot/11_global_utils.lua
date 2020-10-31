@@ -260,7 +260,6 @@ _G.toNil = Nil
 _G.Table = function(...)
   local firstArg = ...
   if isFunction(firstArg) then
-    local v
     local ret = {}
     for v in firstArg do
       table.insert(ret, v)
@@ -370,7 +369,7 @@ _G.setProp = curryN(3, function(k, v, t)
   if isNotTable(t) then return t end
   local newTable = clone(t)
   newTable[k] = v
-  
+
   return newTable
 end)
 
@@ -403,7 +402,7 @@ _G.path = function(...)
   local firstKey = head(ks)
 
   return function(t)
-    if isNil(t) or isNil(firstKey) then return t end 
+    if isNil(t) or isNil(firstKey) then return t end
     return path(unpack(tail(ks))) (prop(firstKey, t))
   end
 end
@@ -451,7 +450,7 @@ _G.keys = function(t)
 
   local i = 1
 
-  forEach(function(value, key)
+  forEach(function(_, key)
     ret[i] = key
     i = i + 1
   end, t)
@@ -464,7 +463,7 @@ _G.values = function(t)
   local ret = {}
   local i = 1
 
-  forEach(function(value, key)
+  forEach(function(value, _)
     ret[i] = value
     i = i + 1
   end, t)
@@ -476,7 +475,7 @@ end
 _G.omit = function(...)
   local keys = pack(...)
   return function(t)
-    return reject(function(value, key)
+    return reject(function(_, key)
       local foundIndex = findKey(identical(key), keys)
       return isNotNil(foundIndex)
     end, t)
@@ -486,7 +485,7 @@ end
 _G.pick = function(...)
   local keys = pack(...)
   return function(t)
-    return filter(function(value, key)
+    return filter(function(_, key)
       local foundIndex = findKey(identical(key), keys)
       return isNotNil(foundIndex)
     end, t)
@@ -530,7 +529,7 @@ _G.drop = curryN(2, function(n, t)
   local dropped = 0
   local i = 1
 
-  forEach(function(v, k)
+  forEach(function(v, _)
     if dropped >= n then
       ret[i] = v
       i = i + 1
@@ -593,7 +592,7 @@ _G.dropUntil = curryN(2, function(predicate, t)
     end
   end, t)
 
-  return ret  
+  return ret
 end)
 
 local stringTakeUntil = function(predicate, str)
@@ -604,7 +603,7 @@ local stringTakeUntil = function(predicate, str)
     shouldTake = not predicate(c, k)
     if not shouldTake then return stop end
     ret = ret .. c
-  end, str)  
+  end, str)
 
   return ret
 end
@@ -646,7 +645,7 @@ _G.head = function(t)
   if isString(t) then return prop(1, t) end
 
   local foundHead = nil
- 
+
   forEach(function(v)
     foundHead = v
     return stop
@@ -679,13 +678,13 @@ end)
 
 local simpleSplit = function(sep, str)
   if str == "" then return nil end
-  
+
   local sepPos, nextPos = string.find(str, sep, 1, true)
   if isNil(nextPos) then return str end
 
   local firstWord = string.sub(str, 1, sepPos - 1)
   local secondWord = string.sub(str, nextPos + 1)
-  
+
   return firstWord, secondWord
 end
 
@@ -718,7 +717,7 @@ _G.contains = curryN(2, function(value, t)
   end
 
   local valueFound = false
-  
+
   forEach(function(v)
     if value == v then
       valueFound = true
@@ -783,14 +782,14 @@ _G.isEmpty = function(v)
   if isTable(v) then
     local iterated = false
 
-    forEach(function(x)
+    forEach(function(_)
       iterated = true
       return stop
     end, v)
 
     return not iterated
   end
-  
+
   return false
 end
 
@@ -892,7 +891,7 @@ _G.equalsBy = curryN(3, function(comparator, a, b)
   end, b)
 
   if not iterated then return true end
-  return isShallowEquals  
+  return isShallowEquals
 end)
 
 _G.notEqualsBy = curryN(2, function(comparator, a, b)
@@ -1020,13 +1019,13 @@ _G.reverse = function(t)
 
   objForEach(function(v, k)
     ret[k] = v
-  end, t)  
- 
+  end, t)
+
   local tlen = length(t)
   local i = 1
 
   while i <= tlen do
-    ret[tlen - (i - 1)] = t[i]    
+    ret[tlen - (i - 1)] = t[i]
     i = i + 1
   end
 
@@ -1041,7 +1040,7 @@ _G.forEach = curryN(2, function(f, t)
     end
     return nil
   end
-  
+
   for k, v in pairs(t) do
     if notIdentical(k, 'n') then
       if f(v, k) == stop then return nil end
@@ -1157,12 +1156,12 @@ end
 
 _G.filter = curryN(2, function(predicate, t)
   if isNull(t) then return null end
-  if isString(t) then return filterString(predicate, t) end  
+  if isString(t) then return filterString(predicate, t) end
 
   local ret = {}
   forEach(function(value, key)
     if predicate(value, key) then
-      ret[key] = value 
+      ret[key] = value
     end
   end, t)
 
@@ -1205,7 +1204,7 @@ _G.findKey = curryN(2, function(predicate, t)
     if predicate(v, k) then
       foundKey = k
       return stop
-    end    
+    end
   end, t)
 
   return foundKey
@@ -1215,7 +1214,7 @@ _G.findIndex = findKey
 
 _G.findLast = curryN(2, function(predicate, t)
   local foundValue = nil
-  
+
   forEachRight(function(v, k)
     if predicate(v, k) then
       foundValue = v
@@ -1244,7 +1243,7 @@ end)
 _G.findLastIndex = findLastKey
 
 _G.findByKey = curryN(2, function(predicate, t)
-  return find(function(v, k)
+  return find(function(_, k)
     return predicate(k)
   end, t)
 end)
@@ -1270,7 +1269,7 @@ _G.times = curryN(2, function(f, n)
   local t = {}
 
   for i=1,n do
-   table.insert(t, f(i)) 
+   table.insert(t, f(i))
   end
 
   return t
@@ -1287,8 +1286,8 @@ _G.sort = sortWith(flip(lt))
 _G.sortDesc = sortWith(flip(gt))
 
 _G.sortByWith = curryN(3, function(comp, getter, t)
-  return sortWith(function(a, b)
-    return comp(getter(a), getter(b))
+  return sortWith(function(valA, valB)
+    return comp(getter(valA), getter(valB))
   end, t)
 end)
 
@@ -1334,7 +1333,7 @@ local function dumpTable(tbl, indent)
   end
   if not indent then indent = 0 end
   for k, v in pairs(tbl) do
-    formatting = string.rep("  ", indent) .. k .. ": "
+    local formatting = string.rep("  ", indent) .. k .. ": "
     if type(v) == "table" and isNotEmpty(v) then
       print(formatting)
       dumpTable(v, indent+1)

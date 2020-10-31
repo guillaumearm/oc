@@ -11,10 +11,10 @@ end
 
 ------------------------------------------------------------------------------------------------
 
-local maxHeight = 20
-local headerHeight = 1
-local buttonScrollHeight = 1
-local listHeight = maxHeight - (buttonScrollHeight * 2 + headerHeight)
+-- local maxHeight = 20
+-- local headerHeight = 1
+-- local buttonScrollHeight = 1
+-- local listHeight = maxHeight - (buttonScrollHeight * 2 + headerHeight)
 local listWidth = 30
 
 local maxWidth = listWidth * 2

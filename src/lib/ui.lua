@@ -1,6 +1,6 @@
 local api = {}
 
-function getElementDimensions(elem)
+local function getElementDimensions(elem)
   if isString(elem) then
     local width = length(elem)
     -- `P` means primitive element
@@ -21,7 +21,7 @@ local getLineDimensions = reduce(function(state, elem)
   }
 end, { width=0, height=0, shape='' })
 
-function computeElementDimensions(elem)
+local function computeElementDimensions(elem)
   if elem.height and elem.width then return elem end
 
   local state = { width=0, height=0, shape='' }

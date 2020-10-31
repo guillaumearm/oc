@@ -6,6 +6,7 @@ local PERSISTABLE_FOLDER = '/var/persistable/'
 local persistable = function(dbName, defaultTable)
   local dbPath = fs.concat(PERSISTABLE_FOLDER, dbName)
 
+  local cacheReaded = false
   local dbReaded = false
   local cache = nil
   local db = {}

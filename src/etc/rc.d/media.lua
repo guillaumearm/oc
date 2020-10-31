@@ -22,7 +22,7 @@ local isFsAccepted = function(fs)
   return Boolean(label)
 end
 
-local handleFsAdded = log.wrap(function(type, addr, componentType)
+local handleFsAdded = log.wrap(function(_, addr, componentType)
   if componentType == 'filesystem' then
     local fs = c.proxy(addr)
     if isFsAccepted(fs) then
@@ -32,13 +32,13 @@ local handleFsAdded = log.wrap(function(type, addr, componentType)
   end
 end)
 
-local handleFsRemoved = log.wrap(function(type, addr, componentType)
+local handleFsRemoved = log.wrap(function(_, addr, componentType)
   if componentType == 'filesystem' then
-    filesystem.umount(addr)    
+    filesystem.umount(addr)
   end
 end)
 
-function reload()
+_G.reload = function()
   forEach(function(fs)
     if isFsAccepted(fs) then
       local mediaPath = filesystem.concat(MEDIA_FOLDER, fs.getLabel())
@@ -51,9 +51,9 @@ function reload()
   print('> filesystem /media/ mounting points reloaded')
 end
 
-function start()
+_G.start = function()
   if started then return; end
-  log.clean()    
+  log.clean()
 
   event.listen('component_added', handleFsAdded)
   event.listen('component_removed', handleFsRemoved)
@@ -64,21 +64,21 @@ function start()
 end
 
 function stop()
-  if not started then return; end 
+  if not started then return; end
 
   event.ignore('component_added', handleFsAdded)
   event.ignore('component_removed', handleFsRemoved)
-  
+
   started = false
   print("> stopped media")
 end
 
-function restart()
+_G.restart = function()
   stop()
   start()
 end
 
-function status()
+_G.status = function()
   if started
     then print("> media: ON")
     else print("> media: OFF")

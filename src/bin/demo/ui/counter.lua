@@ -64,7 +64,7 @@ local mainUpdater = combineUpdaters({
 })
 
 --------------------------------------------------------
-local initHandler = captureAction('@init', function(prevState, state)
+local initHandler = captureAction('@init', function(_, _)
   beep()
 end)
 

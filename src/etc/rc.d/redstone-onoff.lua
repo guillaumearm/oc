@@ -3,7 +3,7 @@ local c = require('component')
 local event = require('event')
 local log = require('log')('redstone-onoff')
 
-started = false
+_G.started = false
 
 local setRedstoneThreshold = function()
   if c.isAvailable('redstone') and c.redstone.getWakeThreshold() <= 0 then
@@ -11,19 +11,19 @@ local setRedstoneThreshold = function()
   end
 end
 
-local handleRedstoneChanged = log.wrap(function(type, addr, side, prevValue, nextValue)
+local handleRedstoneChanged = log.wrap(function(_, _, _, prevValue, nextValue)
   if prevValue == 0 and nextValue > 0 then
     computer.shutdown()
   end
 end)
 
-local handleComponentAvailable = log.wrap(function(type, componentType)
+local handleComponentAvailable = log.wrap(function(_, componentType)
   if componentType == 'redstone' then
     setRedstoneThreshold();
   end
 end)
 
-function start()
+_G.start = function()
   if started then return; end
   log.clean()
 
@@ -35,7 +35,7 @@ function start()
   print("> started redstone-onoff")
 end
 
-function stop()
+_G.stop = function()
   if not started then return; end
 
   event.ignore('redstone_changed', handleRedstoneChanged)
@@ -45,12 +45,12 @@ function stop()
   print("> stopped redstone-onoff")
 end
 
-function restart()
+_G.restart = function()
   stop()
   start()
 end
 
-function status()
+_G.status = function()
   if started
     then print("> redstone-onoff: ON")
     else print("> redstone-onoff: OFF")
