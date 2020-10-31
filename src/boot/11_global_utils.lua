@@ -1490,6 +1490,14 @@ function Try:extract()
   return unpack(self._result)
 end
 
+function Try:wrapStatus()
+  if self._status then
+    return self:map(function(...) return true, ... end)
+  end
+
+  return self:catch():map(function(...) return false, ... end)
+end
+
 function Try:pack()
   return self:map(pack)
 end
