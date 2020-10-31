@@ -176,3 +176,7 @@ _G.combineSubscriptions = function(...)
     end, subscriptions)
   end)
 end
+
+function Subscription:add(...)
+  return combineSubscriptions(self, ...)
+end
