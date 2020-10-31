@@ -26,7 +26,12 @@ local givenFileName = firstArg
 
 local filePath = shell.resolve(givenFileName, 'lua')
 
-local getcycle = loadfile(filePath)
+local getcycle, syntaxError = loadfile(filePath)
+
+if not getcycle then
+  printQuit(syntaxError)
+end
+
 local cycle, readErr = getcycle(unpack(restArgs))
 
 local function printQuit(...)
