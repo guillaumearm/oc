@@ -101,7 +101,7 @@ _G.withClickOutside = curryN(2, function(maybeFn, element)
   return merge(element, { onClickOutside=onClickOutside })
 end)
 
-_G.withOnClickOutside = _withClickOutside
+_G.withOnClickOutside = withClickOutside
 
 ----- Margins
 
