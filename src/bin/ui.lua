@@ -1,4 +1,3 @@
-local os = require('os')
 local shell = require('shell')
 local execUI = require('ui/exec')
 
