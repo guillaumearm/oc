@@ -1382,3 +1382,13 @@ _G.printError = function(...)
 end
 
 _G.printErr = printError
+
+_G.printExit = function(...)
+  printError(...)
+  require('os').exit(1)
+end
+
+_G.printExitSuccess = function(...)
+  print(...)
+  require('os').exit(0)
+end

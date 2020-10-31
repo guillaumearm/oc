@@ -1,4 +1,3 @@
-local os = require('os')
 local shell = require('shell')
 local runCycle = require('cycle')
 
@@ -29,18 +28,13 @@ local filePath = shell.resolve(givenFileName, 'lua')
 local getcycle, syntaxError = loadfile(filePath)
 
 if not getcycle then
-  printQuit(syntaxError)
+  printExit(syntaxError)
 end
 
 local cycle, readErr = getcycle(unpack(restArgs))
 
-local function printQuit(...)
-  printErr(...)
-  os.exit(1)
-end
-
 if readErr then
-  printQuit(readErr)
+  printExit(readErr)
 end
 
 printVerbose('start program')

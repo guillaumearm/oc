@@ -12,16 +12,11 @@ local filePath = shell.resolve(givenFileName, 'lua')
 local getcontainer = loadfile(filePath)
 local container, readErr = getcontainer()
 
-local function printQuit(...)
-  printErr(...)
-  os.exit(1)
-end
-
 if readErr then
-  printQuit(readErr)
+  printExit(readErr)
 end
 
 local ok, err = execUI(container, unpack(restArgs))
 
-if not ok then printQuit(err) end
+if not ok then printExit(err) end
 
