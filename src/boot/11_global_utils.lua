@@ -58,6 +58,9 @@ end
 
 _G.fst = function(a, _) return a end
 _G.snd = function(_, b) return b end
+_G.third = function(_, _, c) return c end
+_G.fourth = function(_, _, _, d) return d end
+_G.fifth = function(_, _, _, _, e) return e end
 
 _G.pipe = function(f, g, ...)
   if g == nil then return f end
@@ -354,6 +357,12 @@ end)
 _G.propOr = curryN(3, function(fallbackValue, k, t)
   return prop(k, t) or fallbackValue
 end)
+
+_G.nth = function(n)
+  return function(...)
+    return pack(...)[n]
+  end
+end
 
 _G.setProp = curryN(3, function(k, v, t)
   if isString(t) then

@@ -66,6 +66,19 @@ _G.interval = function(ms)
   end)
 end
 
+-- it works with observables and regular arrays (table with only numeric keys)
+_G.mergeAll = function(firstArg, ...)
+  if isNotTable(firstArg) then
+    error('> mergeAll: invalid arguments')
+  end
+
+  if isObservable(firstArg) then
+    return firstArg:merge(...)
+  end
+
+  return mergeAll(firstArg, ...)
+end
+
 -------------------------------------------------------------------------------
 ---- Observable new methods
 -------------------------------------------------------------------------------
