@@ -40,7 +40,7 @@ local function mainCycle()
     :map(withColor('yellow'))
     :map(withBgColor('red'))
 
-  local buttonRemoveCounter = of(View('deletet'))
+  local buttonRemoveCounter = of(View('delete'))
     :map(withOnClick(removeCounter))
     :map(withColor('blue'))
     :map(withBgColor('red'))
