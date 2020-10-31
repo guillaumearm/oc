@@ -115,7 +115,8 @@ local createUiDrivers = function(getStopSubscription)
       end
 
       -- detect click outside
-      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickElement)), handlers)
+      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickEvent)), domHandlers)
+
       forEach(function(h)
         if isSubject(h.onClickOutside) then
           h.onClickOutside:onNext(clickEvent)

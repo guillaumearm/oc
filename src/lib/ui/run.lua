@@ -4,17 +4,17 @@ local c = require('component')
 
 local gpu = c.gpu
 
-function isClicked(clickEvent)
+local function isClicked(clickEvent)
   return function(h)
     return clickEvent.x >= h.x and clickEvent.x < h.x + h.width and clickEvent.y >= h.y and clickEvent.y < h.y + h.height
   end
 end
 
-function isNotClicked(clickEvent)
+local function isNotClicked(clickEvent)
   return complement(isClicked(clickEvent))
 end
 
-function runUI(view, updater, handler, ...)
+local function runUI(view, updater, handler, ...)
   handler = handler or noop
   local events = concat({ 'touch', 'ui' }, pack(...))
   local previousRenderedElement = nil
@@ -93,7 +93,7 @@ function runUI(view, updater, handler, ...)
       end
 
       -- detect click outside
-      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickElement)), handlers)
+      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickEvent)), handlers)
 
       forEach(function(h)
         local clickOutsideResult = pack(h.onClickOutside(clickEvent))
