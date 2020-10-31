@@ -1,6 +1,7 @@
 -- Counter cycle example
 
 local runCycle = require('cycle')
+local Button = require('cycle/Button')
 
 local beep = require('component').computer.beep
 
@@ -10,11 +11,8 @@ local Counter = function(initialValue)
   local clickPlus = Subject.create()
   local clickMinus = Subject.create()
 
-  local buttonPlus = of(View('+'))
-    :map(withOnClick(clickPlus))
-
-  local buttonMinus = of(View('-'))
-    :map(withOnClick(clickMinus))
+  local buttonPlus = Button('+', clickPlus)
+  local buttonMinus = Button('-', clickMinus)
 
   local counterValue = clickPlus:map(always('inc'))
     :merge(clickMinus:map(always('dec')))
