@@ -643,6 +643,8 @@ function Observable:count(predicate)
   end)
 end
 
+local defaultScheduler = nil
+
 --- Returns a new throttled Observable that waits to produce values until a timeout has expired, at
 -- which point it produces the latest value from the source Observable.  Whenever the source
 -- Observable produces a value, the timeout is reset.
@@ -650,6 +652,7 @@ end
 -- @arg {Scheduler} scheduler - The scheduler to run the Observable on.
 -- @returns {Observable}
 function Observable:debounce(time, scheduler)
+  scheduler = scheduler or defaultScheduler
   time = time or 0
 
   return Observable.create(function(observer)
@@ -711,8 +714,6 @@ function Observable:defaultIfEmpty(...)
     return self:subscribe(onNext, onError, onCompleted)
   end)
 end
-
-local defaultScheduler = nil
 
 --- Returns a new Observable that produces the values of the original delayed by a time period.
 -- @arg {number|function} time - An amount in milliseconds to delay by, or a function which returns
