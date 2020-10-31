@@ -94,9 +94,7 @@ function Observable:withLatestFrom(...)
 end
 
 -- private share function
-local shareWithSubject = function(this, givenSubject)
-  local subjectFactory = when(isNotFunction, always)(givenSubject)
-
+local function shareWithSubject(this, subjectFactory)
   local refCount = 0
   local _subject = nil
   local thisSub = nil
@@ -124,10 +122,12 @@ local shareWithSubject = function(this, givenSubject)
       refCount = refCount - 1
       subjectSub:unsubscribe();
 
-      if thisSub and refCount == 0 then
-        thisSub:unsubscribe();
-        thisSub = nil
-      end
+      setImmediate(function()
+        if thisSub and refCount == 0 then
+          thisSub:unsubscribe();
+          thisSub = nil
+        end
+      end)
     end)
   end)
 end
@@ -135,11 +135,15 @@ end
 function Observable:shareReplay(bufferSize)
   bufferSize = bufferSize or 1
 
-  return shareWithSubject(self, Rx.ReplaySubject.create(bufferSize))
+  return shareWithSubject(self, function()
+    return Rx.ReplaySubject.create(bufferSize)
+  end)
 end
 
 function Observable:share()
-  return shareWithSubject(self, Rx.Subject.create())
+  return shareWithSubject(self, function()
+    return Rx.Subject.create()
+  end)
 end
 
 function Observable:scanActions(actionsMap, initialState)

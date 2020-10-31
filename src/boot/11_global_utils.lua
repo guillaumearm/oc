@@ -1304,6 +1304,10 @@ _G.setTimeout = function(cb, ms)
   return event.timer(sec, cb, 1)
 end
 
+_G.setImmediate = function(cb)
+  return setTimeout(cb, 0)
+end
+
 _G.clearTimeout = event.cancel
 
 _G.setInterval = function(cb, ms)
