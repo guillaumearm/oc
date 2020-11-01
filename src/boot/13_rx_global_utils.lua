@@ -107,7 +107,7 @@ local eventsKeyMap = {
 }
 
 local getEventFromKeyMap = function(key, code)
-  return eventsKeyMap[String(key) .. ',' .. String(code)]
+  return eventsKeyMap[String(math.floor(key)) .. ',' .. String(math.floor(code))]
 end
 
 local fromKey = function(eventName)
@@ -165,19 +165,19 @@ function Observable:shift()
 end
 
 function Observable:action(actionType)
-  return self.map(function(...)
+  return self:map(function(...)
     return actionType, ...
   end)
 end
 
 function Observable:renameAction(actionType)
-  return self.map(function(_, ...)
+  return self:map(function(_, ...)
     return actionType, ...
   end)
 end
 
 function Observable:filterAction(actionType)
-  return self.filter(identical(actionType))
+  return self:filter(identical(actionType))
 end
 
 -- private share function

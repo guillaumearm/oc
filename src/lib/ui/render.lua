@@ -31,7 +31,7 @@ end
 ------------------------------------------------------------------------------------------------
 
 local function renderPrimitive(x, y, value, parentStyle, style)
-  style = merge(parentStyle, style or {})
+  style = assign(parentStyle, style or {})
 
   local newColor = getHexaColor(style.color or parentStyle.color)
   local newBgColor = getHexaColor(style.backgroundColor or parentStyle.backgroundColor)
@@ -58,7 +58,7 @@ end
 local function renderElement(elem, x, y, parentStyle, style, registerEvent)
   x = x or 1
   y = y or 1
-  parentStyle = merge(parentStyle or defaultStyle, style or {})
+  parentStyle = assign(parentStyle or defaultStyle, style or {})
 
   if isString(elem) then
     return renderPrimitive(x, y, elem, parentStyle, style)
@@ -111,7 +111,7 @@ local function render(_, _, x, y, registerEvent)
 
   local function paint(elem)
     local elemStyle = elem and elem.style or {}
-    local style = merge(defaultStyle, elemStyle)
+    local style = assign(defaultStyle, elemStyle)
 
     if not rendered then
       rendered = true

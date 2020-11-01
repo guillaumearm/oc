@@ -273,8 +273,7 @@ _G.merge = assign
 
 _G.mergeTo = curryN(2, simpleMerge)
 
-
-_G.withDefault = flip(merge)
+_G.withDefault = flip(mergeTo)
 
 _G.complement = function(predicate)
   return function(...)
@@ -461,7 +460,7 @@ _G.evolve = curryN(2, function(evolveTable, t)
     return fn(elem)
   end, evolveTable)
 
-  return merge(t, updatedTable)
+  return simpleMerge(t, updatedTable)
 end)
 
 -------------- TODO
