@@ -54,36 +54,18 @@ end
 
 -- it works with observables and regular arrays (table with only numeric keys)
 _G.mergeAll = function(firstArg, ...)
-  if isNotTable(firstArg) then
-    error('> mergeAll: invalid arguments')
-  end
-
-  if isObservable(firstArg) then
-    return firstArg:merge(...)
-  end
-
-  return mergeAll(firstArg, ...)
-end
-
-local originalMerge = merge
-
-_G.merge = function(firstArg, ...)
-  if not firstArg then
-    return NEVER
-  end
-
   if isObservable(firstArg) then
     return firstArg:merge(...)
   end
 
   if isTable(firstArg) then
-    return originalMerge(firstArg, ...)
+    return assign(firstArg, ...)
   end
 
   return NEVER
 end
 
-_G.mergeAll = merge
+_G.merge = mergeAll
 
 -------------------------------------------------------------------------------
 ---- Observable and events

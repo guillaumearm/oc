@@ -4,7 +4,7 @@ local Button = function(text, onClick)
 
   local elem = text:map(View):map(withClick(onClick))
 
-  local highlighted = of(false):concat(merge(
+  local highlighted = of(false):concat(mergeAll(
     onClick:mapTo(true),
     onClick:debounce(1000):mapTo(false)
   ))
