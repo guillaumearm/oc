@@ -63,7 +63,7 @@ _G.fourth = function(_, _, _, d) return d end
 _G.fifth = function(_, _, _, _, e) return e end
 
 _G.pipe = function(f, g, ...)
-  if g == nil then return f end
+  if g == nil then return f or identity end
 
   local nextFn = simpleCompose(g, f)
   return pipe(nextFn, ...)
@@ -88,13 +88,47 @@ _G.applyTo = function(...)
 end
 
 _G.apply = function(fn, ...)
+  return fn(...)
+end
+
+_G.call = function(fn, ...)
+  return apply(fn, ...)
+end
+
+_G.Fx = function(...)
+  local fns = map(tap, pack(...))
+
+  local mainFn = pipe(unpack(fns))
+  -- local mainFn = function(...)
+  --   local args = pack(...)
+  --   forEach(function(fn)
+  --     fn(unpack(args))
+  --   end, fns)
+  -- end
+
+  return function(...)
+    local args = pack(...)
+    return function()
+      return mainFn(unpack(args))
+    end
+  end
+end
+
+-- call given functions without arguments
+_G.callFx = function(...)
+  forEach(function(fn)
+    fn()
+  end, pack(...))
+
+  return ...
+end
+
+_G.cb = function(fn, ...)
   local args = pack(...)
   return function()
     fn(unpack(args))
   end
 end
-
-_G.cb = apply
 
 _G.pack = table.pack
 _G.unpack = table.unpack

@@ -106,6 +106,10 @@ function Observable:withLatestFrom(...)
   return self:with(...)
 end
 
+function Observable:mapFx(...)
+  return self:map(Fx(...))
+end
+
 -- private share function
 local function shareWithSubject(this, subjectFactory)
   local refCount = 0

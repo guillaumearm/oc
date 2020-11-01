@@ -1042,13 +1042,30 @@ function Observable:last()
   end)
 end
 
+
+-- TODO move in util
+local function simpleCompose(f, g)
+  return function(...)
+    return f(g(...))
+  end
+end
+
+local identity = function(...) return ... end
+
+local pipe = function(f, g, ...)
+  if g == nil then return f or identity end
+
+  local nextFn = simpleCompose(g, f)
+  return pipe(nextFn, ...)
+end
+
 --- Returns a new Observable that produces the values of the original transformed by a function.
 -- @arg {function} callback - The function to transform values from the original Observable.
 -- @returns {Observable}
-function Observable:map(callback)
-  return Observable.create(function(observer)
-    callback = callback or util.identity
+function Observable:map(...)
+  local callback = pipe(...)
 
+  return Observable.create(function(observer)
     local function onNext(...)
       return util.tryWithObserver(observer, function(...)
         return observer:onNext(callback(...))
