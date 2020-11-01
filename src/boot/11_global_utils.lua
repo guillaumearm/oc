@@ -56,11 +56,33 @@ local function simpleCompose(f, g)
   end
 end
 
-_G.fst = function(a, _) return a end
-_G.snd = function(_, b) return b end
-_G.third = function(_, _, c) return c end
-_G.fourth = function(_, _, _, d) return d end
-_G.fifth = function(_, _, _, _, e) return e end
+_G.fst    = function(a, _)          return a end
+_G.snd    = function(_, b)          return b end
+_G.third  = function(_, _, c)       return c end
+_G.fourth = function(_, _, _, d)    return d end
+_G.fifth  = function(_, _, _, _, e) return e end
+
+_G.shift = function(n)
+  n = n or 1
+
+  return function(...)
+    return unpack(drop(n, pack(...)))
+  end
+end
+
+_G.shiftOne   = shift(1)
+_G.shiftTwo   = shift(2)
+_G.shiftThree = shift(3)
+_G.shiftFour  = shift(4)
+_G.shiftFive  = shift(5)
+
+_G.unshift = function(...)
+  local params = pack(...)
+
+  return function(...)
+    return unpack(concat(params, pack(...)))
+  end
+end
 
 _G.pipe = function(f, g, ...)
   if g == nil then return f or identity end
@@ -775,7 +797,13 @@ _G.contains = curryN(2, function(value, t)
   return valueFound
 end)
 
-_G.oneOf = flip(contains)
+_G.oneOf = function(...)
+  local args = pack(...)
+
+  return function(value)
+    return contains(value, args)
+  end
+end
 
 -- TYPE PREDICATES
 
@@ -817,6 +845,18 @@ _G.isNotNil = complement(isNil)
 _G.Boolean = function(v)
   local isFalsy = isNil(v) or v == '' or v == 0 or v == false
   return not isFalsy
+end
+
+_G.Not = function(v)
+  return not v
+end
+
+_G.inverse = function(v)
+  if isNumber(v) then
+    return -v
+  end
+
+  return not v
 end
 
 _G.isTruthy = Boolean

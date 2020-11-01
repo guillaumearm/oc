@@ -1,4 +1,4 @@
-local Rx = require('rx')
+local Rx = require('/src/lib/rx')
 
 _G.Rx = Rx
 
@@ -17,6 +17,7 @@ _G.EMPTY = Rx.Observable.empty()
 _G.NEVER = Rx.Observable.never()
 _G.of = Rx.Observable.of
 _G.throw = Rx.Observable.throw
+_G.defer = Rx.Observable.defer
 
 _G.isObservable = function(obs)
   if isNotTable(obs) then
@@ -130,6 +131,10 @@ _G.fromKeyUp = fromKey('key_up')
 -------------------------------------------------------------------------------
 ---- Observable new methods
 -------------------------------------------------------------------------------
+
+-------------------------------------
+---- Regular methods
+-------------------------------------
 function Observable:switchMap(callback)
   return self:map(callback):switch()
 end
@@ -154,20 +159,68 @@ function Observable:withLatestFrom(...)
   return self:with(...)
 end
 
+function Observable:shift(n)
+  return self:map(shift(n or 1))
+end
+
+function Observable:unshift(...)
+  return self:map(unshift(...))
+end
+
+function Observable:when(o)
+  return o:switchMap(function(enabled)
+    if not enabled then
+      return NEVER
+    end
+
+    return self
+  end)
+end
+
+function Observable:activateWhen(o)
+  return self:when(o)
+end
+
+function Observable:Then(o)
+  o = o or NEVER
+
+  return self:switchMap(function(value)
+    if Boolean(value) then
+      return o
+    end
+
+    return of(null)
+  end)
+end
+
+function Observable:Else(o)
+  o = o or NEVER
+
+  return self:switchMap(function(value)
+    if value == null then
+      return o
+    end
+
+    return of(value)
+  end)
+end
+
+-------------------------------------
+---- Fx methods
+-------------------------------------
 function Observable:mapFx(...)
   return self:map(Fx(...))
 end
 
-function Observable:shift()
-  return self:map(function(_, ...)
-    return ...
-  end)
+-------------------------------------
+---- action methods
+-------------------------------------
+function Observable:removeAction()
+  return self:map(shift(1))
 end
 
 function Observable:action(actionType)
-  return self:map(function(...)
-    return actionType, ...
-  end)
+  return self:unshift(actionType)
 end
 
 function Observable:renameAction(actionType)
@@ -176,8 +229,12 @@ function Observable:renameAction(actionType)
   end)
 end
 
-function Observable:filterAction(actionType)
-  return self:filter(identical(actionType))
+function Observable:filterAction(...)
+  return self:filter(oneOf(...))
+end
+
+function Observable:filterActions(...)
+  return self:filter(oneOf(...))
 end
 
 -- private share function
