@@ -109,7 +109,8 @@ local getEventFromKeyMap = function(key, code)
 end
 
 local fromKey = function(eventName)
-  return fromEvent(eventName)
+  return function ()
+    return fromEvent(eventName)
     :map(function(_, _, key, code)
       if (isPrintable(key)) then
         return 'key', char(key)
@@ -118,6 +119,7 @@ local fromKey = function(eventName)
       return getEventFromKeyMap(key, code)
     end)
     :reject(isNil)
+  end
 end
 
 _G.fromKeyDown = fromKey('key_down')
@@ -152,6 +154,28 @@ end
 
 function Observable:mapFx(...)
   return self:map(Fx(...))
+end
+
+function Observable:shift()
+  return self:map(function(_, ...)
+    return ...
+  end)
+end
+
+function Observable:action(actionType)
+  return self.map(function(...)
+    return actionType, ...
+  end)
+end
+
+function Observable:renameAction(actionType)
+  return self.map(function(_, ...)
+    return actionType, ...
+  end)
+end
+
+function Observable:filterAction(actionType)
+  return self.filter(identical(actionType))
 end
 
 -- private share function

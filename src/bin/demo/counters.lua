@@ -2,19 +2,9 @@
 
 local runCycle = require('cycle')
 local Button = require('cycle/Button')
+local InputText = require('cycle/InputText')
 
 local beep = require('component').computer.beep
-
-local InputText = function(setText)
-  setText = setText or NEVER
-  local textState = of('initial'):merge(setText)
-
-  local ui = textState:map(rightPad(20), View)
-    -- return {
-    --   ui=ui,
-    -- }
-    return ui
-end
 
 local Counter = function(initialValue)
   initialValue = initialValue or 0
@@ -69,14 +59,19 @@ local function mainCycle()
     return combineLatest(unpack(cs)):map(horizontal)
   end):map(withBgColor('red'))
 
-  local inputText = InputText()
+  local setInput = Subject.create()
+
+  local inputText, onEnter = InputText(setInput)
+
+  local cleanInputFx = onEnter:mapFx(cb(setInput, ''))
 
   local ui = combineLatest(inputText, buttonAddCounter, buttonRemoveCounter, countersView)
     :map(vertical)
     :map(withBgColor('orange'))
 
   return {
-    ui=ui
+    ui=ui,
+    fx=cleanInputFx
   }
 end
 

@@ -740,6 +740,15 @@ _G.split = curryN(2, function(sep, str)
   return ret
 end)
 
+-- TODO negative value
+_G.cutString = curryN(2, function(n, str)
+  if n <= 1 then
+    return '', str
+  end
+
+  return string.sub(str, 1, n - 1), string.sub(str, n)
+end)
+
 _G.startsWith = curryN(2, function(substr, str)
   return take(#substr, str) == substr
 end)
@@ -870,7 +879,7 @@ _G.isNotZero = complement(isZero)
 -- BASIC LOGIC
 
 _G.identical = curryN(2, function(a, b) return a == b end)
-_G.notIdentical = curryN(2, function(a, b) return not(a == b) end)
+_G.notIdentical = curryN(2, function(a, b) return a ~= b end)
 
 _G.isTrue = identical(true)
 _G.isNotTrue = complement(isTrue)
