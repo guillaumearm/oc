@@ -148,12 +148,8 @@ end
 -- @returns {Observable}
 function Observable.of(...)
   local args = {...}
-  local argCount = select('#', ...)
   return Observable.create(function(observer)
-    for i = 1, argCount do
-      observer:onNext(args[i])
-    end
-
+    observer:onNext(unpack(args))
     observer:onCompleted()
   end)
 end
