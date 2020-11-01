@@ -1482,8 +1482,17 @@ end
 
 -- -----------------------------
 
-_G.beep = function(...)
-  return require('component').computer.beep(...)
+_G.beep = function(freq, durationMs)
+  local computer = require('component').computer
+
+  if isString(freq) then
+    return computer.beep(freq)
+  end
+
+  freq = max(20, freq or 440)
+  local durationSec = (durationMs or 100) / 1000
+
+  return computer.beep(freq, durationSec)
 end
 
 -- ------------------
