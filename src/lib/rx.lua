@@ -1997,11 +1997,18 @@ end
 function TimeoutScheduler:schedule(action, delayMs)
   local event = require('event')
 
+  local actionDispatched = false
   local delayS = delayMs / 1000
-  local timerId = event.timer(delayS, action, 1)
+
+  local timerId = event.timer(delayS, function(...)
+    actionDispatched = true
+    return action(...)
+  end, 1)
 
   return Subscription.create(function()
-    event.cancel(timerId)
+    if not actionDispatched then
+      event.cancel(timerId)
+    end
   end)
 end
 
