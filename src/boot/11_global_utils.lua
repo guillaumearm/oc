@@ -1308,23 +1308,56 @@ _G.sortDescBy = sortByWith(flip(gt))
 --  TIMER UTILS  --
 -------------------
 _G.setTimeout = function(cb, ms)
-  ms = ms or 0
-  local sec = ms / 1000
-  return require('event').timer(sec, cb, 1)
+  local event = require('event')
+  local sec = (ms or 0) / 1000
+
+  local called = false
+  local disposed = false
+
+  local timeoutId = event.timer(sec, function(...)
+    called = true
+    return cb(...)
+  end, 1)
+
+  local disposeFunction = function()
+    if not called and not disposed then
+      return event.cancel(timeoutId)
+    end
+    disposed = true
+  end
+
+  return disposeFunction
 end
 
 _G.setImmediate = function(cb)
   return setTimeout(cb, 0)
 end
 
-_G.clearTimeout = function(...)
-  return require('event').cancel(...)
+_G.clearTimeout = function(disposeFn)
+  if isFunction(disposeFn) then
+    return disposeFn()
+  end
+
+  local cancel = require('event').cancel
+
+  return cancel(disposeFn)
 end
 
 _G.setInterval = function(cb, ms)
-  ms = ms or 0
-  local sec = ms / 1000
-  return require('event').timer(sec, cb, math.huge)
+  local event = require('event')
+  local sec = (ms or 0) / 1000
+
+  local disposed = false
+  local intervalId = event.timer(sec, cb, math.huge)
+
+  local disposeFunction = function()
+    if not disposed then
+      return event.cancel(intervalId)
+    end
+    disposed = true
+  end
+
+  return disposeFunction
 end
 
 _G.clearInterval = clearTimeout
