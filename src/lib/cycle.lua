@@ -12,12 +12,20 @@ local Rx = require('rx')
 local noopDriver = function(sink) return sink:subscribe(noop) end
 
 -- basic print driver for debug
+-- TODO store printed values if ui is rendered
 local printDriver = function(sink) return sink:subscribe(print) end
 
 -- in-memory state driver
 local stateDriver = function(sink)
-  local stateSubject = Rx.ReplaySubject.create(1)
-  return sink.subscribe(stateSubject), stateSubject
+  return sink:shareReplay(1)
+end
+
+local actionDriver = function(sink)
+  return sink:share()
+end
+
+local fxDriver = function(sink)
+  return sink:subscribe(callFx)
 end
 
 -- used to give the ability to a cycle to close itself
@@ -155,7 +163,9 @@ local runCycle = function(cycle, drivers, shouldWaitForStop, shouldWaitForInterr
   local uiDriver, resetScreen = createUiDrivers(getStopSubscription)
 
   local getDefaultDrivers = withDefault({
+    fx=fxDriver,
     state=stateDriver,
+    action=actionDriver,
     ui=uiDriver,
     print=printDriver,
     stop=stopDriver,
