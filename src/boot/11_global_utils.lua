@@ -1482,6 +1482,10 @@ end
 
 -- -----------------------------
 
+_G.beep = function(...)
+  return require('component').computer.beep(...)
+end
+
 -- ------------------
 -- --  COROUTINES  --
 -- ------------------

@@ -230,6 +230,7 @@ globals={
   "printExitSuccess",
   "pack",
   "unpack",
+  "beep",
   "yield",
   "try",
   "maybe",
