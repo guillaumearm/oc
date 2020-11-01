@@ -21,7 +21,7 @@ local InputText = function(setText)
     of('init'),
     onAdd,
     onRemoveBack,
-    setText
+    setText:action('set')
   )
     :scanActions({
       init=function()
@@ -33,7 +33,7 @@ local InputText = function(setText)
       removeback=function()
         return evolve({ value=dropLast(1), cursor=dec })
       end,
-      setText=function(v)
+      set=function(v)
         return evolve({ value=always(v), cursor=always(length(v) + 1) })
       end
     }, initialState)
