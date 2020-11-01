@@ -144,7 +144,7 @@ local function render(_, _, x, y, registerEvent)
     end
 
     if e then
-      renderElement(e, x, y, elemStyle, elemStyle, registerEvent);
+      renderElement(e, x, y, style, elemStyle, registerEvent);
       previousRenderedElement = e
     end
   end
