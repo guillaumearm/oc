@@ -65,6 +65,26 @@ _G.mergeAll = function(firstArg, ...)
   return mergeAll(firstArg, ...)
 end
 
+local originalMerge = merge
+
+_G.merge = function(firstArg, ...)
+  if not firstArg then
+    return NEVER
+  end
+
+  if isObservable(firstArg) then
+    return firstArg:merge(...)
+  end
+
+  if isTable(firstArg) then
+    return originalMerge(firstArg, ...)
+  end
+
+  return NEVER
+end
+
+_G.mergeAll = merge
+
 -------------------------------------------------------------------------------
 ---- Observable and events
 -------------------------------------------------------------------------------

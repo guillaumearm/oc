@@ -269,8 +269,10 @@ _G.assign = function(t1, t2, ...)
   return assign(merged, ...)
 end
 
+_G.merge = assign
+
 _G.mergeTo = curryN(2, simpleMerge)
-_G.merge = mergeTo
+
 
 _G.withDefault = flip(merge)
 
