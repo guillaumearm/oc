@@ -3,8 +3,10 @@ local initialState = { value='', cursor=1 }
 local InputText = function(setText)
   setText = setText or NEVER
 
+  print('> 1')
   local onKey = fromKeyDown():share()
 
+  print('> 2')
   local onPrintableKey = onKey
     :filterAction('key')
     :renameAction('addkey')
@@ -17,6 +19,7 @@ local InputText = function(setText)
     :filterAction('enter')
     :renameAction('submit')
 
+  print('> 3')
   local textState = of('init'):merge(onPrintableKey, onBackspace, setText:map(createAction('setText')))
     :scanActions({
       init=function()
@@ -33,11 +36,15 @@ local InputText = function(setText)
       end
     }, initialState)
 
+  print('> 4')
+
   local ui = textState:map(
     prop('value'),
     rightPad(20),
     View
   )
+
+  print('> 5')
 
   return ui, onSubmit
 end
