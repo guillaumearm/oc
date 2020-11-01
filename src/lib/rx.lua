@@ -106,7 +106,19 @@ Observable.__tostring = util.constant('Observable')
 -- @returns {Observable}
 function Observable.create(subscribe)
   local self = {
-    _subscribe = subscribe
+    _subscribe = function(observer)
+      local result = subscribe(observer)
+
+      if isSubscription(result) then
+        return result
+      end
+
+      if isFunction(result) then
+        return Subscription.create(result)
+      end
+
+      return Subscription.create();
+    end
   }
 
   return setmetatable(self, Observable)
