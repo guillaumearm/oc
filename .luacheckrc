@@ -289,6 +289,8 @@ globals={
   "isObservable",
   "ensureObservable",
   "fromEvent",
+  "fromKeyDown",
+  "fromKeyUp",
   "combineLatest",
   "interval",
   "mergeAll",

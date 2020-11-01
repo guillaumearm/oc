@@ -32,20 +32,6 @@ _G.ensureObservable = function(x)
   return Rx.Observable.of(x)
 end
 
-_G.fromEvent = function(eventName)
-  local event = require('event')
-  return Rx.Observable.create(function(observer)
-    local eventId = event.listen(eventName, function(...)
-      observer:onNext(...)
-    end)
-
-    return Rx.Subscription.create(function()
-      event.cancel(eventId)
-      observer:onCompleted();
-    end)
-  end)
-end
-
 _G.combineLatest = function(o, ...)
   return o:combineLatest(...)
 end
@@ -78,6 +64,64 @@ _G.mergeAll = function(firstArg, ...)
 
   return mergeAll(firstArg, ...)
 end
+
+-------------------------------------------------------------------------------
+---- Observable and events
+-------------------------------------------------------------------------------
+_G.fromEvent = function(eventName)
+  local event = require('event')
+  return Rx.Observable.create(function(observer)
+    local eventId = event.listen(eventName, function(...)
+      observer:onNext(...)
+    end)
+
+    return Rx.Subscription.create(function()
+      event.cancel(eventId)
+      observer:onCompleted();
+    end)
+  end)
+end
+
+local eventsKeyMap = {
+  ["13,28"] = "enter",
+  ["8,14"]  = "backspace",
+  ["9,15"]  = "tab",
+  ["0,200"] = "up",
+  ["0,203"] = "left",
+  ["0,205"] = "right",
+  ["0,208"] = "down",
+  ["0,42"]  = "shift", -- left shift only
+  ["0,54"]  = "right-shift",
+  ["0,29"]  = "ctrl", -- left ctrl only
+  ["0,157"] = "right-ctrl",
+  ["0,56"]  = "alt", -- left alt only
+  ["0,184"] = "right-alt",
+  ["0,201"] = "page-up",
+  ["0,209"] = "page-down",
+  ["0,210"] = "insert",
+  ["0,211"] = "delete",
+  ["0,199"] = "home",
+  ["0,207"] = "end"
+}
+
+local getEventFromKeyMap = function(key, code)
+  return eventsKeyMap[String(key) .. ',' .. String(code)]
+end
+
+local fromKey = function(eventName)
+  return fromEvent(eventName)
+    :map(function(_, _, key, code)
+      if (isPrintable(key)) then
+        return 'key', char(key)
+      end
+
+      return getEventFromKeyMap(key, code)
+    end)
+    :reject(isNil)
+end
+
+_G.fromKeyDown = fromKey('key_down')
+_G.fromKeyUp = fromKey('key_up')
 
 -------------------------------------------------------------------------------
 ---- Observable new methods
