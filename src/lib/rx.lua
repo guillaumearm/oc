@@ -643,7 +643,7 @@ function Observable:count(predicate)
   end)
 end
 
-local defaultScheduler = nil
+local getDefaultScheduler = function() end
 
 --- Returns a new throttled Observable that waits to produce values until a timeout has expired, at
 -- which point it produces the latest value from the source Observable.  Whenever the source
@@ -652,7 +652,7 @@ local defaultScheduler = nil
 -- @arg {Scheduler} scheduler - The scheduler to run the Observable on.
 -- @returns {Observable}
 function Observable:debounce(time, scheduler)
-  scheduler = scheduler or defaultScheduler
+  scheduler = scheduler or getDefaultScheduler()
   time = time or 0
 
   return Observable.create(function(observer)
@@ -721,7 +721,7 @@ end
 -- @arg {Scheduler} scheduler - The scheduler to run the Observable on.
 -- @returns {Observable}
 function Observable:delay(time, scheduler)
-  scheduler = scheduler or defaultScheduler
+  scheduler = scheduler or getDefaultScheduler()
   time = type(time) ~= 'function' and util.constant(time) or time
 
   return Observable.create(function(observer)
@@ -2307,7 +2307,9 @@ ReplaySubject.__call = ReplaySubject.onNext
 Observable.wrap = Observable.buffer
 Observable['repeat'] = Observable.replicate
 
-defaultScheduler = TimeoutScheduler
+getDefaultScheduler = function()
+  return TimeoutScheduler.create()
+end
 
 return {
   util = util,
