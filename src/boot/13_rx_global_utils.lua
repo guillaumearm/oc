@@ -1,4 +1,4 @@
-local Rx = require('/src/lib/rx')
+local Rx = require('rx')
 
 _G.Rx = Rx
 
