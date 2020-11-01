@@ -1,26 +1,28 @@
 local initialState = { value='', cursor=1 }
 
-local InputText = function()
-  -- setText = setText or NEVER
+local InputText = function(setText)
+  setText = setText or NEVER
 
-  print('> 1')
-  -- local onKey = fromKeyDown():share()
+  local onKey = fromKeyDown():share()
 
-  print('> 2')
-  -- local onPrintableKey = onKey
-  --   :filterAction('key')
-  --   :renameAction('addkey')
+  local onAdd = onKey
+    :filterAction('key')
+    :renameAction('addkey')
 
-  -- local onBackspace = onKey
-  --   :filterAction('backspace')
-  --   :renameAction('removeback')
+  local onRemoveBack = onKey
+    :filterAction('backspace')
+    :renameAction('removeback')
 
-  -- local onSubmit = onKey
-  --   :filterAction('enter')
-  --   :renameAction('submit')
+  local onSubmit = onKey
+    :filterAction('enter')
+    :renameAction('submit')
 
-  print('> 3')
-  local textState = of('init')
+  local textState = merge(
+    of('init'),
+    onAdd,
+    onRemoveBack,
+    setText
+  )
     :scanActions({
       init=function()
         return always(initialState)
@@ -36,7 +38,6 @@ local InputText = function()
       end
     }, initialState)
 
-  print('> 4')
 
   local ui = textState:map(
     prop('value'),
@@ -44,9 +45,7 @@ local InputText = function()
     View
   )
 
-  print('> 5')
-
-  return ui, Subject.create()
+  return ui, onSubmit
 end
 
 return InputText
