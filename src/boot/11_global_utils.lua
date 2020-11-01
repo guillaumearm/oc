@@ -1029,6 +1029,17 @@ end
 _G.isAlpha = either(isAlphaMin, isAlphaMaj)
 _G.isAlphaNum = either(isStringIsNumeric, isAlpha)
 
+_G.isPrintable = function(value)
+  if isNotNumber(value) then
+    value = byte(value)
+  end
+
+  return value >= 32 and value <= 126
+end
+
+_G.ensureWhitespace = when(isEmpty, const(' '))
+_G.ensureSpace = ensureWhitespace
+
 -- TABLE FUNCTIONS
 
 _G.compact = function(t)
