@@ -19,21 +19,47 @@ local InputText = function(setText)
     :filterAction('enter')
     :renameAction('submit')
 
+  local onLeft = onKey:filterAction('left')
+  local onRight = onKey:filterAction('right')
+
   local textState = merge(
     of('init'),
     onAdd,
     onRemoveBack,
-    setText:action('set')
+    setText:action('set'),
+    onLeft,
+    onRight
   )
     :scanActions({
+      left=function()
+        return evolve({ cursor=pipe(dec, when(isZero, const(1))) })
+      end,
+      right=function()
+        return function(state)
+          return {
+            value=state.value,
+            cursor=max(state.cursor + 1, length(state.value))
+          }
+        end
+      end,
       init=function()
         return always(initialState)
       end,
       addkey=function(c)
-        return evolve({ value=append(c), cursor=inc  })
+        return function(state)
+          return {
+            value=insertCharAt(state.cursor, c, state.value),
+            cursor=state.cursor + 1
+          }
+        end
       end,
       removeback=function()
-        return evolve({ value=dropLast(1), cursor=dec })
+        return function(state)
+          return {
+            value=removeCharAt(state.cursor - 1, state.value),
+            cursor=max(1, state.cursor - 1)
+          }
+        end
       end,
       set=function(v)
         return evolve({ value=always(v), cursor=always(length(v) + 1) })

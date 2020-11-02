@@ -388,10 +388,15 @@ _G.replaceCharAt = curryN(3, function(pos, c, str)
   if pos < 0 then
     pos = #str + 1 + abs(pos)
   end
+
   return string.sub(str, 1, pos - 1) .. c .. string.sub(str, pos + 1)
 end)
 
 _G.removeCharAt = curryN(2, function(pos, str)
+  if pos == 0 then
+    return str
+  end
+
   return replaceCharAt(pos, '', str)
 end)
 
