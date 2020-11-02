@@ -103,13 +103,13 @@ local InputText = function(setText)
     }, initialState)
 
 
-  local ui = textState:with(selected):map(
+  local ui = textState:combineLatest(selected):map(
     function(state, isSelected)
-      if not isSelected then
-        return state.value
-      end
-
       local value = rightPad(20)(state.value)
+
+      if not isSelected then
+        return View(value)
+      end
 
       local strA, strB = cutString(state.cursor)(value)
       local cursorText = ensureWhitespace(first(strB))
