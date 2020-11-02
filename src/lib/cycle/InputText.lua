@@ -5,7 +5,16 @@ local withCursorStyle = withStyle({ backgroundColor="white", color="black" })
 local InputText = function(setText)
   setText = setText or NEVER
 
-  local onKey = fromKeyDown():share()
+  local onClick = Subject.create()
+  local onClickOutside = Subject.create()
+
+  local selected = merge(
+    onClick:mapTo(true),
+    onClickOutside:mapTo(false),
+    of(false)
+  ):shareReplay(1)
+
+  local onKey = fromKeyDown():when(selected):share()
 
   local onAddKey = onKey:filterAction('key')
   local onBackspace = onKey:filterAction('backspace')
@@ -94,8 +103,12 @@ local InputText = function(setText)
     }, initialState)
 
 
-  local ui = textState:map(
-    function(state)
+  local ui = textState:with(selected):map(
+    function(state, isSelected)
+      if not isSelected then
+        return state.value
+      end
+
       local value = rightPad(20)(state.value)
 
       local strA, strB = cutString(state.cursor)(value)
@@ -104,7 +117,8 @@ local InputText = function(setText)
 
       return horizontal(strA, withCursorStyle(View(cursorText)), strB)
     end,
-    View
+    withClick(onClick),
+    withClickOutside(onClickOutside)
   )
 
   return ui, onSubmit
