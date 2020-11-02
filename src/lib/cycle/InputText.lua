@@ -1,5 +1,7 @@
 local initialState = { value='', cursor=1 }
 
+local withCursorStyle = withStyle({ backgroundColor="white", color="black" })
+
 local InputText = function(setText)
   setText = setText or NEVER
 
@@ -40,7 +42,15 @@ local InputText = function(setText)
 
 
   local ui = textState:map(
-    prop('value'),
+    function(state)
+      local value = rightPad(20)(state.value)
+
+      local strA, strB = cutString(state.cursor)(value)
+      local cursorText = ensureWhitespace(first(strB))
+      strB = tail(strB)
+
+      return horizontal(strA, withCursorStyle(View(cursorText)), strB)
+    end,
     rightPad(20),
     View
   )

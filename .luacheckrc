@@ -106,6 +106,7 @@ globals={
   "trim",
   "join",
   "split",
+  "cutString",
   "startsWith",
   "endWith",
   "contains",
