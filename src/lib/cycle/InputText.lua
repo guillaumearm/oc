@@ -36,9 +36,16 @@ local InputText = function(setText)
       end,
       right=function()
         return function(state)
+          local value = state.value
+          local nextCursor = state.cursor + 1
+
+          if nextCursor > length(value) + 1 then
+            nextCursor = length(value) + 1
+          end
+
           return {
-            value=state.value,
-            cursor=min(state.cursor + 1, length(state.value) + 1)
+            value=value,
+            cursor=nextCursor
           }
         end
       end,
