@@ -7,13 +7,11 @@ local InputText = function(setText)
 
   local onKey = fromKeyDown():share()
 
-  local onAdd = onKey
-    :filterAction('key')
-    :renameAction('addkey')
-
-  local onRemoveBack = onKey
-    :filterAction('backspace')
-    :renameAction('removeback')
+  local onAddKey = onKey:filterAction('key')
+  local onBackspace = onKey:filterAction('backspace')
+  local onDelete = onKey:filterAction('delete')
+  local onHome = onKey:filterAction('home')
+  local onEnd = onKey:filterAction('end')
 
   local onSubmit = onKey
     :filterAction('enter')
@@ -24,13 +22,19 @@ local InputText = function(setText)
 
   local textState = merge(
     of('init'),
-    onAdd,
-    onRemoveBack,
-    setText:action('set'),
     onLeft,
-    onRight
+    onRight,
+    onAddKey,
+    onBackspace,
+    onDelete,
+    onHome,
+    onEnd,
+    setText:action('set')
   )
     :scanActions({
+      init=function()
+        return always(initialState)
+      end,
       left=function()
         return evolve({ cursor=pipe(dec, when(isZero, const(1))) })
       end,
@@ -49,10 +53,7 @@ local InputText = function(setText)
           }
         end
       end,
-      init=function()
-        return always(initialState)
-      end,
-      addkey=function(c)
+      key=function(c)
         return function(state)
           return {
             value=insertCharAt(state.cursor, c, state.value),
@@ -60,11 +61,30 @@ local InputText = function(setText)
           }
         end
       end,
-      removeback=function()
+      backspace=function()
         return function(state)
           return {
             value=removeCharAt(state.cursor - 1, state.value),
             cursor=max(1, state.cursor - 1)
+          }
+        end
+      end,
+      delete=function()
+        return function(state)
+          return {
+            value=removeCharAt(state.cursor, state.value),
+            cursor=state.cursor
+          }
+        end
+      end,
+      home=function()
+        return evolve({ cursor=const(1) })
+      end,
+      ['end']=function()
+        return function(state)
+          return {
+            value=state.value,
+            cursor=length(state.value) + 1
           }
         end
       end,
