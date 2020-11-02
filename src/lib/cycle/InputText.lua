@@ -51,7 +51,6 @@ local InputText = function(setText)
 
       return horizontal(strA, withCursorStyle(View(cursorText)), strB)
     end,
-    rightPad(20),
     View
   )
 
