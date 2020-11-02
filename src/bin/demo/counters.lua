@@ -61,11 +61,25 @@ local function mainCycle()
 
   local setInput = Subject.create()
 
-  local inputText, onEnter = InputText(setInput)
+  local inputFirstName, onSubmitFirstName = InputText(setInput)
+  local labeledInputFirstName = inputFirstName:map(function(x)
+    return horizontal(View('First Name'), x)
+  end)
 
-  local cleanInputFx = onEnter:mapFx(cb(setInput, ''))
+  local inputLastName, onSubmitLastName = InputText(setInput)
+  local labeledInputLastName = inputLastName:map(function(x)
+    return horizontal(View('Last Lame'), x)
+  end)
 
-  local ui = combineLatest(inputText, buttonAddCounter, buttonRemoveCounter, countersView)
+  local cleanInputFx = merge(onSubmitFirstName, onSubmitLastName):mapFx(cb(setInput, ''))
+
+  local ui = combineLatest(
+    labeledInputFirstName,
+    labeledInputLastName,
+    buttonAddCounter,
+    buttonRemoveCounter,
+    countersView
+  )
     :map(vertical)
     :map(withBgColor('orange'))
 
