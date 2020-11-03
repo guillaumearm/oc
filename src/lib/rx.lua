@@ -244,7 +244,7 @@ Subscription.EMPTY = (function (sub)
 end)(Subscription.create())
 
 -- @class SubjectSubscription
--- @description A specialized Subscription for Subjects. **This is NOT a public class, 
+-- @description A specialized Subscription for Subjects. **This is NOT a public class,
 -- it is intended for internal use only!**<br>
 -- A handle representing the link between an Observer and a Subject, as well as any
 -- work required to clean up after the Subject completes or the Observer unsubscribes.
@@ -396,29 +396,32 @@ Observable.__index = Observable
 Observable.__tostring = util.constant('Observable')
 Observable.___isa = { Observable }
 
---- Creates a new Observable. Please not that the Observable does not do any work right after creation, but only after calling a `subscribe` on it.
--- @arg {function} subscribe - The subscription function that produces values. It is called when the Observable 
+--- Creates a new Observable. Please not that the Observable does not do any work right after creation, but only after
+--                             calling a `subscribe` on it.
+-- @arg {function} subscribe - The subscription function that produces values. It is called when the Observable
 --                             is initially subscribed to. This function is given an Observer, to which new values
---                             can be `onNext`ed, or an `onError` method can be called to raise an error, or `onCompleted`
+--                             can be `onNext`ed, or an `onError` method can be called to raise an error,
+--                             or `onCompleted`
 --                             can be called to notify of a successful completion.
 -- @returns {Observable}
-function Observable.create(subscribe)
+function Observable.create(_subscribe)
   local self = {}
-  local subscribe = subscribe
+  local subscribe = _subscribe
 
   if subscribe then
-    self._subscribe = function (self, ...) return subscribe(...) end
+    self._subscribe = function (_, ...) return subscribe(...) end
   end
 
   return setmetatable(self, Observable)
 end
 
--- Creates a new Observable, with this Observable as the source. It must be used internally by operators to create a proper chain of observables.
+-- Creates a new Observable, with this Observable as the source. It must be used internally by operators to
+--                                                               create a proper chain of observables.
 -- @arg {function} createObserver observer factory function
 -- @returns {Observable} a new observable chained with the source observable
-function Observable:lift(createObserver)
+function Observable:lift(_createObserver)
   local this = self
-  local createObserver = createObserver
+  local createObserver = _createObserver
 
   return Observable.create(function (observer)
     return this:subscribe(createObserver(observer))
@@ -429,7 +432,8 @@ end
 -- @arg {function|Observer} onNext|observer - Called when the Observable produces a value.
 -- @arg {function} onError - Called when the Observable terminates due to an error.
 -- @arg {function} onCompleted - Called when the Observable completes normally.
--- @returns {Subscription} a Subscription object which you can call `unsubscribe` on to stop all work that the Observable does.
+-- @returns {Subscription} a Subscription object which you can call `unsubscribe`
+--                         on to stop all work that the Observable does.
 function Observable:subscribe(observerOrNext, onError, onCompleted)
   local sink
 
@@ -453,7 +457,7 @@ end
 
 --- Returns an Observable that never produces values and never completes.
 function Observable.never()
-  return Observable.create(function(observer) end)
+  return Observable.create(function() end)
 end
 
 --- Returns an Observable that immediately produces an error.
@@ -831,7 +835,7 @@ function Observable:combineLatest(...)
       return destination:onError(e)
     end
 
-    local function createOnCompleted(i)
+    local function createOnCompleted()
       return function()
         completedCount = completedCount + 1
 
@@ -967,8 +971,6 @@ function Observable:debounce(time, scheduler)
 
     local function wrap(key)
       return function(...)
-        local value = util.pack(...)
-
         if debounced[key] then
           debounced[key]:unsubscribe()
           sink:remove(debounced[key])
@@ -1364,7 +1366,6 @@ function Observable:merge(...)
 
   return self:lift(function (destination)
     local completedCount = 0
-    local subscriptions = {}
 
     local function onNext(...)
       return destination:onNext(...)
@@ -1374,7 +1375,7 @@ function Observable:merge(...)
       return destination:onError(message)
     end
 
-    local function onCompleted(i)
+    local function onCompleted()
       return function()
         completedCount = completedCount + 1
 
@@ -1813,7 +1814,7 @@ end
 -- @arg {number=1} n - The number of elements to produce before completing.
 -- @returns {Observable}
 function Observable:take(n)
-  local n = n or 1
+  n = n or 1
 
   return self:lift(function (destination)
     if n <= 0 then
@@ -2100,10 +2101,10 @@ function Observable.zip(...)
       active[i] = true
     end
 
-    local function onNext(i)
+    local function onNext(n)
       return function(value)
-        table.insert(values[i], value)
-        values[i].n = values[i].n + 1
+        table.insert(values[n], value)
+        values[n].n = values[n].n + 1
 
         local ready = true
         for i = 1, count do
@@ -2116,9 +2117,9 @@ function Observable.zip(...)
         if ready then
           local payload = {}
 
-          for i = 1, count do
-            payload[i] = table.remove(values[i], 1)
-            values[i].n = values[i].n - 1
+          for j = 1, count do
+            payload[j] = table.remove(values[j], 1)
+            values[j].n = values[j].n - 1
           end
 
           observer:onNext(util.unpack(payload))
@@ -2304,7 +2305,6 @@ end
 -- @arg {number=0} delay - The delay, in milliseconds.
 -- @returns {Subscription}
 function TimeoutScheduler:schedule(action, delay, ...)
-  local subscription
   local handle = setTimeout(delay, action, ...)
   return Subscription.create(function()
     clearTimeout(handle)
@@ -2332,20 +2332,24 @@ function Subject.create()
   return self
 end
 
--- Creates a new Subject, with this Subject as the source. It must be used internally by operators to create a proper chain of observables.
+
+-- @class AnonymousSubject
+-- @description A specialized Subject which acts as a proxy when lifting a Subject.
+-- **This is NOT a public class, it is intended for internal use only!**<br>
+-- Its role is crucial to create a proper chain of operators / observables and to make
+-- automatic unsubscription work correctly.
+local AnonymousSubject = {}
+AnonymousSubject.__index = AnonymousSubject
+AnonymousSubject.__tostring = util.constant('AnonymousSubject')
+
+
+-- Creates a new Subject, with this Subject as the source. It must be used internally by operators to create a proper
+-- chain of observables.
 -- @arg {function} createObserver - observer factory function
 -- @returns {Subject} - a new Subject chained with the source Subject
 function Subject:lift(createObserver)
   return AnonymousSubject.create(self, createObserver)
 end
-
-local DummyEntryForDocs = {}
---- Creates a new Observer or uses the exxisting one, and registers Observer handlers for notifications the Subject will emit.
--- @arg {function|Observer} onNext|observer - Called when the Observable produces a value.
--- @arg {function} onError - Called when the Observable terminates due to an error.
--- @arg {function} onCompleted - Called when the Observable completes normally.
--- @returns {Subscription} a Subscription object which you can call `unsubscribe` on to stop all work that the Observable does.
-function DummyEntryForDocs:subscribe(onNext, onError, onCompleted) end
 
 function Subject:_subscribe(observer)
   if self._unsubscribed then
@@ -2364,7 +2368,7 @@ end
 
 --- Pushes zero or more values to the Subject. They will be broadcasted to all Observers.
 -- @arg {*...} values values to the Subject. They will be broadcasted to all Observers.
----@param values *...
+---@param values any...
 function Subject:onNext(...)
   if self._unsubscribed then
     error('Object is unsubscribed')
@@ -2635,17 +2639,7 @@ end
 
 ReplaySubject.__call = ReplaySubject.onNext
 
-local Subject -- lazy loaded to avoid loop
 local _initialized = false
-
--- @class AnonymousSubject
--- @description A specialized Subject which acts as a proxy when lifting a Subject. 
--- **This is NOT a public class, it is intended for internal use only!**<br>
--- Its role is crucial to create a proper chain of operators / observables and to make
--- automatic unsubscription work correctly.
-local AnonymousSubject = {}
-AnonymousSubject.__index = AnonymousSubject
-AnonymousSubject.__tostring = util.constant('AnonymousSubject')
 
 local function lazyInitClass()
   if _initialized then return end
@@ -2691,6 +2685,8 @@ end
 
 Observable.wrap = Observable.buffer
 Observable['repeat'] = Observable.replicate
+
+lazyInitClass()
 
 return {
   util = util,
