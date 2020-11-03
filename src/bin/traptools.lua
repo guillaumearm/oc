@@ -86,7 +86,8 @@ local SYNC_PREFIX_URL = 'https://raw.githubusercontent.com/guillaumearm/oc/maste
 
 local syncCommand = function()
   local filesToDownload = {
-    'lib/rx.lua'
+    'lib/rx.lua',
+    'bin/traptools.lua'
   }
 
     -- init global utils
