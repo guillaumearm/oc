@@ -82,12 +82,29 @@ local reinstallCommand = function()
   exec(join(' && ', commands))
 end
 
+local SYNC_PREFIX_URL = 'https://raw.githubusercontent.com/guillaumearm/oc/master/src/'
+
+local syncCommand = function()
+  local filesToDownload = {
+    'lib/rx.lua'
+  }
+
+    -- init global utils
+    exec('/boot/11_global_utils');
+
+  forEach(function(file)
+    print('> Downloading ' .. file)
+    exec('wget -f ' .. SYNC_PREFIX_URL .. file .. ' /' .. file)
+  end, filesToDownload)
+end
+
 local function printUsage()
   print('Usage:')
   print('\t\t traptools init')
   print('\t\t traptools uninstall [--hard]')
   print('\t\t traptools reinstall')
   print('\t\t traptools update')
+  print('\t\t traptools sync')
   print('\t\t traptools help [<command>]')
   print('')
   print('type `man traptools` for more details')
@@ -115,6 +132,8 @@ elseif firstArg == 'uninstall' then
   end
 elseif firstArg == 'reinstall' or firstArg == 'update' then
   reinstallCommand()
+elseif firstArg == 'sync' then
+  syncCommand()
 elseif firstArg == 'help' and secondArg == 'init' then
   print('`init` - this is the postinstall script, it enables embeded daemons and reboot the computer')
 elseif firstArg == 'help' and secondArg == 'uninstall' then
@@ -123,7 +142,9 @@ elseif firstArg == 'help' and secondArg == 'uninstall' then
 elseif firstArg == 'help' and secondArg == 'reinstall' then
   print('`reinstall` - Used to hard reinstall traptools on /media/traptools')
 elseif firstArg == 'help' and secondArg == 'update' then
-  print('`update` - alias for `traptools uninstall`')
+  print('`update` - alias for `traptools reinstall`')
+elseif firstArg == 'help' and secondArg == 'sync' then
+  print('`sync` - directly fetch some files (used for development only)')
 else
   printUsage()
 end
