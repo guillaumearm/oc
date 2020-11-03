@@ -2,13 +2,19 @@
 -- https://github.com/bjornbytes/rxlua
 -- MIT License
 
+local function simpleCompose(f, g)
+  return function(...)
+    return f(g(...))
+  end
+end
+
 local util = {}
 
 util.pack = table.pack or function(...) return { n = select('#', ...), ... } end
 util.unpack = table.unpack or unpack
 util.eq = function(x, y) return x == y end
 util.noop = function() end
-util.identity = function(x) return x end
+util.identity = function(...) return ... end
 util.constant = function(x) return function() return x end end
 util.isa = function(object, class)
   return type(object) == 'table' and getmetatable(object).__index == class
@@ -19,6 +25,13 @@ util.tryWithObserver = function(observer, fn, ...)
     observer:onError(result)
   end
   return success, result
+end
+
+util.pipe = function(f, g, ...)
+  if g == nil then return f or util.identity end
+
+  local nextFn = simpleCompose(g, f)
+  return pipe(nextFn, ...)
 end
 
 --- @class Subscription
@@ -34,8 +47,7 @@ Subscription.__tostring = util.constant('Subscription')
 -- @returns {Subscription}
 function Subscription.create(action)
   local self = {
-    action = action or util.noop,
-    unsubscribed = false
+    action = action or util.noop
   }
 
   return setmetatable(self, Subscription)
@@ -43,8 +55,7 @@ end
 
 function Subscription.empty()
   local self = {
-    action = util.noop,
-    unsubscribed = true
+    action = util.noop
   }
 
   return setmetatable(self, Subscription)
@@ -52,9 +63,11 @@ end
 
 --- Unsubscribes the subscription, performing any necessary cleanup work.
 function Subscription:unsubscribe()
-  if self.unsubscribed then return end
-  self.unsubscribed = true
-  self.action(self)
+  local action = self.action
+
+  self.action = util.noop
+
+  action(self)
 end
 
 --- @class Observer
@@ -321,10 +334,13 @@ function Observable:all(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local subscription = Subscription.empty()
+
     local function onNext(...)
       util.tryWithObserver(observer, function(...)
         if not predicate(...) then
           observer:onNext(false)
+          subscription:unsubscribe()
           observer:onCompleted()
         end
       end, ...)
@@ -339,7 +355,8 @@ function Observable:all(predicate)
       return observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    subscription = self:subscribe(onNext, onError, onCompleted)
+    return subscription
   end)
 end
 
@@ -470,7 +487,7 @@ function Observable:catch(handler)
   handler = handler and (type(handler) == 'function' and handler or util.constant(handler))
 
   return Observable.create(function(observer)
-    local subscription
+    local subscription = Subscription.empty()
 
     local function onNext(...)
       return observer:onNext(...)
@@ -478,12 +495,13 @@ function Observable:catch(handler)
 
     local function onError(e)
       if not handler then
+        subscription:unsubscribe()
         return observer:onCompleted()
       end
 
       local success, _continue = pcall(handler, e)
       if success and _continue then
-        if subscription then subscription:unsubscribe() end
+        subscription:unsubscribe()
         _continue:subscribe(observer)
       else
         observer:onError(success and e or _continue)
@@ -911,10 +929,13 @@ function Observable:find(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local subscription = Subscription.empty()
+
     local function onNext(...)
       util.tryWithObserver(observer, function(...)
         if predicate(...) then
           observer:onNext(...)
+          subscription:unsubscribe()
           return observer:onCompleted()
         end
       end, ...)
@@ -928,7 +949,8 @@ function Observable:find(predicate)
       return observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    subscription = self:subscribe(onNext, onError, onCompleted)
+    return subscription
   end)
 end
 
@@ -1074,28 +1096,11 @@ function Observable:last()
   end)
 end
 
-
--- TODO move in util
-local function simpleCompose(f, g)
-  return function(...)
-    return f(g(...))
-  end
-end
-
-local identity = function(...) return ... end
-
-local pipe = function(f, g, ...)
-  if g == nil then return f or identity end
-
-  local nextFn = simpleCompose(g, f)
-  return pipe(nextFn, ...)
-end
-
 --- Returns a new Observable that produces the values of the original transformed by a function.
 -- @arg {function} callback - The function to transform values from the original Observable.
 -- @returns {Observable}
 function Observable:map(...)
-  local callback = pipe(...)
+  local callback = util.pipe(...)
 
   return Observable.create(function(observer)
     local function onNext(...)
@@ -1394,6 +1399,10 @@ end
 function Observable:skip(n)
   n = n or 1
 
+  if n <= 0 then
+    return self
+  end
+
   return Observable.create(function(observer)
     local i = 1
 
@@ -1587,12 +1596,12 @@ end
 function Observable:take(n)
   n = n or 1
 
-  return Observable.create(function(observer)
-    if n <= 0 then
-      observer:onCompleted()
-      return
-    end
+  if n <= 0 then
+    return Observable.empty()
+  end
 
+  return Observable.create(function(observer)
+    local subscription = Subscription.empty()
     local i = 1
 
     local function onNext(...)
@@ -1601,6 +1610,7 @@ function Observable:take(n)
       i = i + 1
 
       if i > n then
+        subscription:unsubscribe()
         observer:onCompleted()
       end
     end
@@ -1613,7 +1623,8 @@ function Observable:take(n)
       return observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    subscription = self:subscribe(onNext, onError, onCompleted)
+    return subscription
   end)
 end
 
@@ -1656,6 +1667,8 @@ end
 -- @returns {Observable}
 function Observable:takeUntil(other)
   return Observable.create(function(observer)
+    local subscription = Subscription.empty()
+
     local function onNext(...)
       return observer:onNext(...)
     end
@@ -1665,12 +1678,18 @@ function Observable:takeUntil(other)
     end
 
     local function onCompleted()
+      subscription:unsubscribe()
       return observer:onCompleted()
     end
 
-    other:subscribe(onCompleted, onCompleted, onCompleted)
+    local otherSub = other:subscribe(onCompleted, onCompleted, onCompleted)
+    local selfSub = self:subscribe(onNext, onError, onCompleted)
 
-    return self:subscribe(onNext, onError, onCompleted)
+    subscription = Subscription.create(function()
+      otherSub:unsubscribe()
+      selfSub:unsubscribe()
+    end)
+    return subscription
   end)
 end
 
@@ -1682,6 +1701,7 @@ function Observable:takeWhile(predicate)
 
   return Observable.create(function(observer)
     local taking = true
+    local subscription = Subscription.empty()
 
     local function onNext(...)
       if taking then
@@ -1692,6 +1712,7 @@ function Observable:takeWhile(predicate)
         if taking then
           return observer:onNext(...)
         else
+          subscription:unsubscribe()
           return observer:onCompleted()
         end
       end
@@ -1705,7 +1726,8 @@ function Observable:takeWhile(predicate)
       return observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    subscription = self:subscribe(onNext, onError, onCompleted)
+    return subscription
   end)
 end
 
