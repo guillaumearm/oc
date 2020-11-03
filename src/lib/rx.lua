@@ -576,11 +576,20 @@ function Observable:concat(other, ...)
       return observer:onCompleted()
     end
 
+    local innerSubscription
+
     local function chain()
-      return other:concat(util.unpack(others)):subscribe(onNext, onError, onCompleted)
+      innerSubscription = other:concat(util.unpack(others)):subscribe(onNext, onError, onCompleted)
     end
 
-    return self:subscribe(onNext, onError, chain)
+    local subscription = self:subscribe(onNext, onError, chain)
+
+    return Subscription.create(function()
+      if innerSubscription then
+        innerSubscription:unsubscribe()
+      end
+      subscription:unsubscribe()
+    end)
   end)
 end
 
