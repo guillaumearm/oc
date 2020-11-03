@@ -41,11 +41,20 @@ function Subscription.create(action)
   return setmetatable(self, Subscription)
 end
 
+function Subscription.empty()
+  local self = {
+    action = util.noop,
+    unsubscribed = true
+  }
+
+  return setmetatable(self, Subscription)
+end
+
 --- Unsubscribes the subscription, performing any necessary cleanup work.
 function Subscription:unsubscribe()
   if self.unsubscribed then return end
-  self.action(self)
   self.unsubscribed = true
+  self.action(self)
 end
 
 --- @class Observer
@@ -117,7 +126,7 @@ function Observable.create(subscribe)
         return Subscription.create(result)
       end
 
-      return Subscription.create();
+      return Subscription.empty();
     end
   }
 
@@ -2065,7 +2074,8 @@ Subject.__tostring = util.constant('Subject')
 function Subject.create()
   local self = {
     observers = {},
-    stopped = false
+    stopped = false,
+    errorMessage = nil
   }
 
   return setmetatable(self, Subject)
@@ -2083,6 +2093,15 @@ function Subject:subscribe(onNext, onError, onCompleted)
     observer = onNext
   else
     observer = Observer.create(onNext, onError, onCompleted)
+  end
+
+  if self.stopped then
+    if self.errorMessage then
+      observer:onError(self.errorMessage)
+    else
+      observer:onCompleted()
+    end
+    return Subscription.empty()
   end
 
   table.insert(self.observers, observer)
@@ -2111,22 +2130,25 @@ end
 -- @arg {string=} message - A string describing what went wrong.
 function Subject:onError(message)
   if not self.stopped then
+    self.stopped = true
+    self.errorMessage = message
+
     for i = #self.observers, 1, -1 do
       self.observers[i]:onError(message)
     end
-
-    self.stopped = true
   end
 end
 
 --- Signal to all Observers that the Subject will not produce any more values.
 function Subject:onCompleted()
   if not self.stopped then
+    self.stopped = true
+
     for i = #self.observers, 1, -1 do
       self.observers[i]:onCompleted()
     end
 
-    self.stopped = true
+    self.observers = {}
   end
 end
 
@@ -2172,10 +2194,10 @@ function AsyncSubject:subscribe(onNext, onError, onCompleted)
   if self.value then
     observer:onNext(util.unpack(self.value))
     observer:onCompleted()
-    return
+    return Subscription.empty()
   elseif self.errorMessage then
     observer:onError(self.errorMessage)
-    return
+    return Subscription.empty()
   end
 
   table.insert(self.observers, observer)
@@ -2208,6 +2230,7 @@ function AsyncSubject:onError(message)
       self.observers[i]:onError(self.errorMessage)
     end
 
+    self.observers = {}
     self.stopped = true
   end
 end
@@ -2223,6 +2246,7 @@ function AsyncSubject:onCompleted()
       self.observers[i]:onCompleted()
     end
 
+    self.observers = {}
     self.stopped = true
   end
 end
@@ -2278,9 +2302,27 @@ end
 --- Pushes zero or more values to the BehaviorSubject. They will be broadcasted to all Observers.
 -- @arg {*...} values
 function BehaviorSubject:onNext(...)
-  self.value = util.pack(...)
+  if not self.stopped then
+    self.value = util.pack(...)
+  end
   return Subject.onNext(self, ...)
 end
+
+--- Pushes an error message to all Observers and terminates the subject. Clears the current value
+-- causing `getValue()` to return `nil`.
+-- @arg {string} message
+function BehaviorSubject:onError(message)
+  self.value = nil
+  return Subject.onError(self, message)
+end
+
+--- Completes the subject and terminates its event stream. Clears the current value, causing
+-- `getValue()` to return `nil`.
+function BehaviorSubject:onCompleted()
+  self.value = nil
+  return Subject.onCompleted(self)
+end
+
 
 --- Returns the last value emitted by the BehaviorSubject, or the initial value passed to the
 -- constructor if nothing has been emitted yet.
@@ -2329,13 +2371,11 @@ function ReplaySubject:subscribe(onNext, onError, onCompleted)
     observer = Observer.create(onNext, onError, onCompleted)
   end
 
-  local subscription = Subject.subscribe(self, observer)
-
   for i = 1, #self.buffer do
     observer:onNext(util.unpack(self.buffer[i]))
   end
 
-  return subscription
+  return Subject.subscribe(self, observer)
 end
 
 --- Pushes zero or more values to the ReplaySubject. They will be broadcasted to all Observers.
