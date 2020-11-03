@@ -1468,12 +1468,15 @@ end
 -- @returns {Observable}
 function Observable:skipUntil(other)
   return Observable.create(function(observer)
+    local otherSubscription = Subscription.empty()
+
     local triggered = false
     local function trigger()
       triggered = true
+      otherSubscription:unsubscribe();
     end
 
-    other:subscribe(trigger, trigger, trigger)
+    otherSubscription = other:subscribe(trigger, trigger, trigger)
 
     local function onNext(...)
       if triggered then
@@ -1493,7 +1496,12 @@ function Observable:skipUntil(other)
       end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    local selfSubscription = self:subscribe(onNext, onError, onCompleted)
+
+    return Subscription.create(function()
+      otherSubscription:unsubscribe()
+      selfSubscription:unsubscribe();
+    end)
   end)
 end
 
