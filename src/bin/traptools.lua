@@ -27,6 +27,12 @@ local DAEMONS_TO_ACTIVATE = {
   "redstone-onoff"
 }
 
+local SYNC_FILES_TO_DOWNLOAD = {
+  'bin/demo/counters.lua',
+  'lib/cycle/InputText.lua',
+  'bin/traptools.lua'
+}
+
 -------------------------------------------------------------------------------
 
 
@@ -85,18 +91,13 @@ end
 local SYNC_PREFIX_URL = 'https://raw.githubusercontent.com/guillaumearm/oc/master/src/'
 
 local syncCommand = function()
-  local filesToDownload = {
-    'lib/rx.lua',
-    'bin/traptools.lua'
-  }
-
     -- init global utils
     exec('/boot/11_global_utils');
 
   forEach(function(file)
     print('> Downloading ' .. file)
     exec('wget -f ' .. SYNC_PREFIX_URL .. file .. ' /' .. file)
-  end, filesToDownload)
+  end, SYNC_FILES_TO_DOWNLOAD)
 end
 
 local function printUsage()
