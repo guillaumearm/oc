@@ -118,18 +118,29 @@ local createUiDrivers = function(getStopSubscription)
 
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
 
-      -- detech regular click
-      local foundClick = find(isClicked(clickEvent), domHandlers)
+      -- detect regular clicks
+      local foundClicks = reverse(filter(isClicked(clickEvent), domHandlers))
 
-      if foundClick and (isSubject(foundClick.onClick) or isFunction(foundClick.onClick)) then
-        local relativeClickPosition = {
-          x=clickEvent.x - foundClick.x + 1,
-          y=clickEvent.y - foundClick.y + 1
-        }
-        foundClick.onClick(assign(clickEvent, relativeClickPosition))
+      local propagationStopped = false
+      local function stopPropagation()
+        propagationStopped = true
       end
 
-      -- detect click outside
+      forEach(function(foundClick)
+        if propagationStopped then
+          return false
+        end
+
+        if foundClick and (isSubject(foundClick.onClick) or isFunction(foundClick.onClick)) then
+          local relativeClickPosition = {
+            x=clickEvent.x - foundClick.x + 1,
+            y=clickEvent.y - foundClick.y + 1
+          }
+          foundClick.onClick(assign(clickEvent, relativeClickPosition, { stopPropagation=stopPropagation }))
+        end
+      end, foundClicks)
+
+      -- detect outside clicks
       local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickEvent)), domHandlers)
 
       forEach(function(h)

@@ -2,7 +2,7 @@ local Button = function(text, onClick)
   text = isObservable(text) and text or of(text)
   onClick = onClick or Subject.create()
 
-  local elem = text:map(View):map(withClick(onClick))
+  local elem = text:map(View):map(withScopedClick(onClick))
 
   local highlighted = of(false):concat(mergeAll(
     onClick:mapTo(true),

@@ -4,8 +4,6 @@ local runCycle = require('cycle')
 local Button = require('cycle/Button')
 local InputText = require('cycle/InputText')
 
-local beep = require('component').computer.beep
-
 local Counter = function(initialValue)
   initialValue = initialValue or 0
 
@@ -27,7 +25,7 @@ local Counter = function(initialValue)
 
   local ui = combineLatest(buttonPlus, counterValueView, buttonMinus):map(vertical)
 
-  return ui:map(withClick(cb(beep))):shareReplay(1)
+  return ui:shareReplay(1)
 end
 
 local function mainCycle()
@@ -35,12 +33,12 @@ local function mainCycle()
   local removeCounter = Subject.create()
 
   local buttonAddCounter = of(View('add'))
-    :map(withOnClick(addCounter))
+    :map(withScopedClick(addCounter))
     :map(withColor('yellow'))
     :map(withBgColor('red'))
 
   local buttonRemoveCounter = of(View('delete'))
-    :map(withOnClick(removeCounter))
+    :map(withScopedClick(removeCounter))
     :map(withColor('blue'))
     :map(withBgColor('red'))
 
@@ -82,6 +80,7 @@ local function mainCycle()
   )
     :map(vertical)
     :map(withBgColor('orange'))
+    :map(withClick(cb(beep)))
 
   return {
     ui=ui,

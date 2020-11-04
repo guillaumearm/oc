@@ -64,6 +64,10 @@ local function renderElement(elem, x, y, parentStyle, style, registerEvent)
     return renderPrimitive(x, y, elem, parentStyle, style)
   end
 
+  if elem.onClick or elem.onClickOutside then
+    registerEvent(elem, x, y, elem.width, elem.height)
+  end
+
   local stateDim = { width=0, height=0 }
   local state = { x=x, y=y }
 
@@ -82,10 +86,6 @@ local function renderElement(elem, x, y, parentStyle, style, registerEvent)
 
     state.y = state.y + line.height
   end, elem.content)
-
-  if elem.onClick or elem.onClickOutside then
-    registerEvent(elem, x, y, stateDim.width, stateDim.height)
-  end
 
   return stateDim
 end

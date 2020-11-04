@@ -66,49 +66,55 @@ local isNextable = function(x)
   return isTable(x) and isFunction(x.onNext)
 end
 
-_G.withClick = curryN(2, function(maybeFn, element)
-  local onClick = function(...)
-    if isFunction(element.onClick) then
-      element.onClick(...)
-    elseif isNextable(element.onClick) then
-      element.onClick:onNext(...)
+local isCallable = function(x)
+  return isFunction(x) or isNextable(x)
+end
+
+local liftElementClick = function(onClick, fn)
+  return function(...)
+    if isCallable(onClick) then
+      onClick(...)
     end
 
-    if isFunction(maybeFn) then
-      return maybeFn(...)
-    elseif isNextable(maybeFn) then
-      maybeFn:onNext(...)
+    if isCallable(fn) then
+      return fn(...)
     end
 
     return ...
   end
+end
 
+_G.withClick = curryN(2, function(fnOrSubject, element)
+  local onClick = liftElementClick(element.onClick, fnOrSubject)
   return assign(element, { onClick=onClick })
 end)
 
+_G.withStopPropagation = function()
+  return function(element)
+    return withClick(function(e)
+      e.stopPropagation()
+    end, element)
+  end
+end
+
+_G.withoutPropagation = withStopPropagation
+
 _G.withOnClick = withClick
 
-_G.withClickOutside = curryN(2, function(maybeFn, element)
-  local onClickOutside = function(...)
-    if isFunction(element.onClickOutside) then
-      element.onClickOutside(...)
-    elseif isNextable(element.onClickOutside) then
-      element.onClickOutside:onNext(...)
-    end
-
-    if isFunction(maybeFn) then
-      return maybeFn(...)
-    elseif isNextable(maybeFn) then
-      maybeFn:onNext(...)
-    end
-
-    return ...
-  end
-
+_G.withClickOutside = curryN(2, function(fnOrSubject, element)
+  local onClickOutside = liftElementClick(element.onClickOutside, fnOrSubject)
   return assign(element, { onClickOutside=onClickOutside })
 end)
 
 _G.withOnClickOutside = withClickOutside
+
+-- withClick + withStopPropagation
+_G.withScopedClick = curryN(2, function(fnOrSubject, element)
+  return applyTo(element)(
+    withoutPropagation(),
+    withClick(fnOrSubject)
+  )
+end)
 
 ----- Margins
 

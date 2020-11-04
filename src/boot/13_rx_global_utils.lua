@@ -302,6 +302,9 @@ _G.isSubject = function(s)
   return isObservable(s) and isFunction(s.onNext) and isFunction(s.onError) and isFunction(s.onCompleted)
 end
 
+_G.isCallable = function(x)
+  return isFunction(x) or isSubject(x)
+end
 -------------------------------------------------------------------------------
 ---- Subscription utilities
 -------------------------------------------------------------------------------
