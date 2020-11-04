@@ -121,19 +121,19 @@ local createUiDrivers = function(getStopSubscription)
       -- detech regular click
       local foundClick = find(isClicked(clickEvent), domHandlers)
 
-      if foundClick and isSubject(foundClick.onClick) then
-        foundClick.onClick:onNext(clickEvent)
-      elseif foundClick and isFunction(foundClick.onClick) then
-        foundClick.onClick(clickEvent)
+      if foundClick and (isSubject(foundClick.onClick) or isFunction(foundClick.onClick)) then
+        local relativeClickPosition = {
+          x=clickEvent.x - foundClick.x + 1,
+          y=clickEvent.y - foundClick.y + 1
+        }
+        foundClick.onClick(assign(clickEvent, relativeClickPosition))
       end
 
       -- detect click outside
       local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickEvent)), domHandlers)
 
       forEach(function(h)
-        if isSubject(h.onClickOutside) then
-          h.onClickOutside:onNext(clickEvent)
-        elseif isFunction(h.onClickOutside) then
+        if isSubject(h.onClickOutside) or isFunction(h.onClickOutside) then
           h.onClickOutside(clickEvent)
         end
       end, filteredHandlers)
