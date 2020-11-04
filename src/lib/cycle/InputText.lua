@@ -49,7 +49,7 @@ local InputText = function(setText)
         return function(state)
           return {
             value=state.value,
-            cursor=min(length(state.value), e.x)
+            cursor=min(length(state.value) + 1, e.x)
           }
         end
       end,
