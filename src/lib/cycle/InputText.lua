@@ -31,6 +31,7 @@ local InputText = function(setText)
 
   local textState = merge(
     of('init'),
+    onClick:action('click'),
     onLeft,
     onRight,
     onAddKey,
@@ -43,6 +44,14 @@ local InputText = function(setText)
     :scanActions({
       init=function()
         return always(initialState)
+      end,
+      click=function(e)
+        return function(state)
+          return {
+            value=state.value,
+            cursor=min(length(state.value), e.x)
+          }
+        end
       end,
       left=function()
         return evolve({ cursor=pipe(dec, when(isZero, const(1))) })
