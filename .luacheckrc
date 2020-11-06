@@ -268,6 +268,8 @@ globals={
   "withStopPropagation",
   "withoutPropagation",
   "withScopedClick",
+  "withScroll",
+  "withOnScroll",
   "withOnClickOutside",
   "withMarginLeft",
   "dispatch",

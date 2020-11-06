@@ -48,7 +48,7 @@ local createStopDriver = function()
 end
 
 local createUiDrivers = function(getStopSubscription)
-  local function isClicked(clickEvent)
+  local function isInteracted(clickEvent)
     return function(h)
       return clickEvent.x >= h.x
         and clickEvent.x < h.x + h.width
@@ -57,8 +57,8 @@ local createUiDrivers = function(getStopSubscription)
     end
   end
 
-  local function isNotClicked(clickEvent)
-    return complement(isClicked(clickEvent))
+  local function isNotInteracted(clickEvent)
+    return complement(isInteracted(clickEvent))
   end
 
   local gpu = c.gpu
@@ -70,7 +70,13 @@ local createUiDrivers = function(getStopSubscription)
 
   local paint = require('ui/render')(nil, nil, nil, nil, function(elem, x, y, width, height)
     table.insert(domNewHandlers, {
-      onClick=elem.onClick, onClickOutside=elem.onClickOutside, x=x, y=y, width=width, height=height
+      onClick=elem.onClick,
+      onClickOutside=elem.onClickOutside,
+      onScroll=elem.onScroll,
+      x=x,
+      y=y,
+      width=width,
+      height=height
     })
   end)
 
@@ -119,7 +125,7 @@ local createUiDrivers = function(getStopSubscription)
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
 
       -- detect regular clicks
-      local foundClicks = reverse(filter(isClicked(clickEvent), domHandlers))
+      local foundClicks = reverse(filter(isInteracted(clickEvent), domHandlers))
 
       local propagationStopped = false
       local function stopPropagation()
@@ -131,7 +137,7 @@ local createUiDrivers = function(getStopSubscription)
           return false
         end
 
-        if foundClick and (isSubject(foundClick.onClick) or isFunction(foundClick.onClick)) then
+        if isCallable(foundClick.onClick) then
           local relativeClickPosition = {
             x=clickEvent.x - foundClick.x + 1,
             y=clickEvent.y - foundClick.y + 1
@@ -141,16 +147,44 @@ local createUiDrivers = function(getStopSubscription)
       end, foundClicks)
 
       -- detect outside clicks
-      local filteredHandlers = filter(both(prop('onClickOutside'), isNotClicked(clickEvent)), domHandlers)
+      local filteredHandlers = filter(both(prop('onClickOutside'), isNotInteracted(clickEvent)), domHandlers)
 
       forEach(function(h)
-        if isSubject(h.onClickOutside) or isFunction(h.onClickOutside) then
+        if isCallable(h.onClickOutside) then
           h.onClickOutside(clickEvent)
         end
       end, filteredHandlers)
     end)
 
-    return combineSubscriptions(renderSub, touchSub)
+    local scrollSub = fromEvent('scroll'):subscribe(function(...)
+      local _, id, x, y, type, user = ...
+
+      local scrollEvent = { id=id, x=x, y=y, type=type, user=user }
+
+       -- detect regular clicks
+       local foundScrolls = reverse(filter(isInteracted(scrollEvent), domHandlers))
+
+       local propagationStopped = false
+       local function stopPropagation()
+         propagationStopped = true
+       end
+
+       forEach(function(foundScroll)
+         if propagationStopped then
+           return false
+         end
+
+         if isCallable(foundScroll.onScroll) then
+           local relativeScrollPosition = {
+             x=scrollEvent.x - foundScroll.x + 1,
+             y=scrollEvent.y - foundScroll.y + 1
+           }
+           foundScroll.onClick(assign(scrollEvent, relativeScrollPosition, { stopPropagation=stopPropagation }))
+         end
+       end, foundScrolls)
+    end)
+
+    return combineSubscriptions(renderSub, touchSub, scrollSub)
   end
 
   return uiDriver, resetScreen

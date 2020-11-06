@@ -64,7 +64,7 @@ local function renderElement(elem, x, y, parentStyle, style, registerEvent)
     return renderPrimitive(x, y, elem, parentStyle, style)
   end
 
-  if elem.onClick or elem.onClickOutside then
+  if elem.onClick or elem.onClickOutside or elem.onScroll then
     registerEvent(elem, x, y, elem.width, elem.height)
   end
 

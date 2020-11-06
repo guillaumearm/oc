@@ -3,8 +3,6 @@
 ------------  Description: Global UI utilities
 ------------  Author: Trapcodien
 ---------------------------------------------------------------------------
-
-local event = require('event')
 local uiApi = require('ui')
 
 local getPredicate = function(x)
@@ -116,6 +114,13 @@ _G.withScopedClick = curryN(2, function(fnOrSubject, element)
   )
 end)
 
+_G.withScroll = curryN(2, function(fnOrSubject, element)
+  local onScroll = liftElementClick(element.onScroll, fnOrSubject)
+  return assign(element, { onScroll=onScroll })
+end)
+
+_G.withOnScroll = withScroll;
+
 ----- Margins
 
 _G.withMarginLeft = curryN(2, function(n, element)
@@ -137,6 +142,7 @@ end)
 --------------------------------
 
 _G.dispatch = function(...)
+  local event = require('event')
   event.push('ui', ...)
 end
 

@@ -205,6 +205,16 @@ function Observable:Else(o)
   end)
 end
 
+function Observable:mapPayload(...)
+  local callbacks = map(function(f)
+    return function(firstArg, ...)
+      return firstArg, f(...)
+    end
+  end, pack(...))
+
+  return self:map(pack(callbacks))
+end
+
 -------------------------------------
 ---- Fx methods
 -------------------------------------
