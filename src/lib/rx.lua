@@ -313,7 +313,6 @@ end
 -- @arg {function=tostring} formatter - A function that formats one or more values to be printed.
 function Observable:dump(name, formatter)
   name = name and (name .. ' ') or ''
-  formatter = formatter or tostring
 
   local onNext
   if formatter then
@@ -1861,7 +1860,9 @@ function Observable:with(...)
     end
 
     local function onNext(value)
-      return observer:onNext(value, util.unpack(latest))
+      if #latest == length(latest) then
+        return observer:onNext(value, util.unpack(latest))
+      end
     end
 
     local function onError(e)
@@ -1876,11 +1877,14 @@ function Observable:with(...)
       subscriptions[i] = sources[i]:subscribe(setLatest(i), util.noop, util.noop)
     end
 
-    subscriptions[#sources + 1] = self:subscribe(onNext, onError, onCompleted)
+    local selfSub = self:subscribe(onNext, onError, onCompleted)
+
     return Subscription.create(function ()
-      for i = 1, #sources + 1 do
+      for i = 1, #sources do
         if subscriptions[i] then subscriptions[i]:unsubscribe() end
       end
+
+      selfSub:unsubscribe()
     end)
   end)
 end
