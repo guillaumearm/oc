@@ -1,4 +1,4 @@
-local Rx = require('src/lib/rx')
+local Rx = require('rx')
 
 _G.Rx = Rx
 
@@ -289,10 +289,6 @@ local function shareWithSubject(this, subjectFactory)
         function(_)
           subject:onCompleted()
           mainSub:unsubscribe()
-          -- _subject = getSubject();
-          -- forEach(function(subjectObserver)
-          --   subjectObserver:onCompleted()
-          -- end, subject.observers)
         end)
       )
     end
