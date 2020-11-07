@@ -1,4 +1,4 @@
-local Rx = require('rx')
+local Rx = require('src/lib/rx')
 
 _G.Rx = Rx
 
@@ -251,7 +251,7 @@ end
 local function shareWithSubject(this, subjectFactory)
   local refCount = 0
   local _subject = nil
-  local thisSub = nil
+  local sourceSub = Subscription.empty()
 
   local getSubject = function()
     if not _subject or _subject.stopped then
@@ -264,25 +264,41 @@ local function shareWithSubject(this, subjectFactory)
   return Observable.create(function(observer)
     local subject = getSubject()
 
-    if not thisSub then
-      thisSub = this:subscribe(subject)
-    end
+    local subjectSub = subject:subscribe(observer)
 
-    refCount = refCount + 1
-
-    local subjectSub = _subject:subscribe(observer)
-
-    return Rx.Subscription.create(function()
+    local mainSub = Rx.Subscription.create(function()
       refCount = refCount - 1
       subjectSub:unsubscribe();
 
-      setImmediate(function()
-        if thisSub and refCount == 0 then
-          thisSub:unsubscribe();
-          thisSub = nil
-        end
-      end)
+      -- setImmediate(function()
+      if refCount == 0 then
+        sourceSub:unsubscribe();
+        sourceSub = Subscription.empty()
+      end
+      -- end)
     end)
+
+    if refCount == 0 then
+      sourceSub = this:subscribe(Observer.create(
+        function(...)
+          subject:onNext(...)
+        end,
+        function(...)
+          subject:onError(...)
+        end,
+        function(_)
+          subject:onCompleted()
+          mainSub:unsubscribe()
+          -- _subject = getSubject();
+          -- forEach(function(subjectObserver)
+          --   subjectObserver:onCompleted()
+          -- end, subject.observers)
+        end)
+      )
+    end
+
+    refCount = refCount + 1
+    return mainSub
   end)
 end
 
@@ -298,6 +314,19 @@ function Observable:share()
   return shareWithSubject(self, function()
     return Rx.Subject.create()
   end)
+end
+
+local function toReducer(updater)
+  return function(state, ...)
+    return updater(...)(state)
+  end
+end
+
+local function handleActions(actionsMap)
+  return function(action, ...)
+    local payloadUpdater = prop(action, actionsMap) or always(identity)
+    return payloadUpdater(...)
+  end
 end
 
 function Observable:scanActions(actionsMap, initialState)
