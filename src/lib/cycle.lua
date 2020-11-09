@@ -48,17 +48,17 @@ local createStopDriver = function()
 end
 
 local createUiDrivers = function(getStopSubscription)
-  local function isInteracted(clickEvent)
+  local function isInteracted(e, handleName)
     return function(h)
-      return clickEvent.x >= h.x
-        and clickEvent.x < h.x + h.width
-        and clickEvent.y >= h.y
-        and clickEvent.y < h.y + h.height
+      return Boolean(h[handleName]) and e.x >= h.x
+        and e.x < h.x + h.width
+        and e.y >= h.y
+        and e.y < h.y + h.height
     end
   end
 
-  local function isNotInteracted(clickEvent)
-    return complement(isInteracted(clickEvent))
+  local function isNotInteracted(e, handleName)
+    return complement(isInteracted(e, handleName))
   end
 
   local gpu = c.gpu
@@ -125,7 +125,7 @@ local createUiDrivers = function(getStopSubscription)
       local clickEvent = { id=id, x=x, y=y, type=type, user=user }
 
       -- detect regular clicks
-      local foundClicks = reverse(filter(isInteracted(clickEvent), domHandlers))
+      local foundClicks = reverse(filter(isInteracted(clickEvent, 'onClick'), domHandlers))
 
       local propagationStopped = false
       local function stopPropagation()
@@ -147,7 +147,7 @@ local createUiDrivers = function(getStopSubscription)
       end, foundClicks)
 
       -- detect outside clicks
-      local filteredHandlers = filter(both(prop('onClickOutside'), isNotInteracted(clickEvent)), domHandlers)
+      local filteredHandlers = filter(isNotInteracted(clickEvent, 'onClickOutside'), domHandlers)
 
       forEach(function(h)
         if isCallable(h.onClickOutside) then
@@ -161,8 +161,8 @@ local createUiDrivers = function(getStopSubscription)
 
       local scrollEvent = { id=id, x=x, y=y, type=type, user=user }
 
-       -- detect regular clicks
-       local foundScrolls = reverse(filter(isInteracted(scrollEvent), domHandlers))
+       -- detect scroll events
+       local foundScrolls = reverse(filter(isInteracted(scrollEvent, 'onScroll'), domHandlers))
 
        local propagationStopped = false
        local function stopPropagation()
