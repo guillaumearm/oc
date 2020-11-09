@@ -20,13 +20,13 @@ local Counter = function(initialValue)
     :scanActions({
       inc=always(add(1)),
       dec=always(add(-1)),
-    }, initialValue)
+    }, initialValue):shareReplay(1)
 
   local counterValueView = counterValue:map(compose(View, String))
 
   local ui = combineLatest(buttonPlus, counterValueView, buttonMinus):map(vertical)
 
-  return ui:shareReplay(1)
+  return ui
 end
 
 local function mainCycle()
@@ -49,19 +49,25 @@ local function mainCycle()
     :scanActions({
       add=function() return append(Counter(0)) end,
       remove=function() return dropLast(1)  end
-    }, {Counter(0), Counter(0), Counter(0)}):shareReplay(1)
+    }, {Counter(0), Counter(0), Counter(0)})
+    :switchMap(function(cs)
+      if isEmpty(cs) then
+        return of(vertical('', '', ''))
+      end
+      return combineLatest(unpack(cs)):pack()
+    end)
+
+
+
+    -- :map(withBgColor('red'))
+    -- :map(withScroll(onScrollCounters))
 
   local onScrollCounters = Subject.create()
   local scrollableCounters = ListScroll(counters, of(2), onScrollCounters);
 
-  local countersView = scrollableCounters:switchMap(function(cs)
-    if isEmpty(cs) then
-      return of(vertical('', '', ''))
-    end
-    return combineLatest(unpack(cs)):map(horizontal)
-  end)
-    :map(withBgColor('red'))
-    :map(withScroll(onScrollCounters))
+  local countersView = scrollableCounters
+    :unpack()
+    :map(vertical)
 
   local setInput = Subject.create()
 
