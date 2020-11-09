@@ -27,6 +27,7 @@ local mainCycle = function()
     :map(values)
     :unpack()
     :map(vertical)
+    :shareReplay(1)
 
   local selectedComponentProxy_ = of(initialSelectedAddr)
     :concat(onClickComponent_)
@@ -34,14 +35,14 @@ local mainCycle = function()
       if not addr then
         return nil
       end
-      return component.proxy(addr)
+      return component.proxy(type)
     end)
     :shareReplay(1)
 
   local selectedComponent_ = selectedComponentProxy_
     :map(function(proxy)
       if not proxy then
-        return View('no selected component')
+        return View('[no selected component]')
       end
       return View(proxy.address)
     end)
