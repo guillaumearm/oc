@@ -35,7 +35,7 @@ local mainCycle = function()
       if not addr then
         return nil
       end
-      return component.proxy(type)
+      return component.proxy(addr)
     end)
     :shareReplay(1)
 
@@ -44,7 +44,7 @@ local mainCycle = function()
       if not proxy then
         return View('[no selected component]')
       end
-      return View(proxy.address)
+      return View(proxy.type)
     end)
 
   local ui = combineLatest(componentsView_, selectedComponent_):map(horizontal)
