@@ -22,18 +22,6 @@ local mainCycle = function()
 
   local onClickComponent_ = Subject.create()
 
-  local componentsView_ = components_
-    :map(mapIndexed(function(name, addr)
-      local shortAddr = take(3, addr)
-      return applyTo(View(name .. ' (' .. shortAddr .. ')' ))(
-        withClick(function() onClickComponent_(addr) end)
-      )
-    end))
-    :map(values)
-    :unpack()
-    :map(vertical)
-    :shareReplay(1)
-
   local selectedComponentProxy_ = combineLatest(of(initialSelectedAddr):concat(onClickComponent_), components_)
     :map(function(addr, components)
       if not addr or not components[addr] then
@@ -41,16 +29,37 @@ local mainCycle = function()
       end
       return component.proxy(addr)
     end)
+    :shareReplay(1)
 
-  local selectedComponent_ = selectedComponentProxy_
-    :map(function(proxy)
-      if not proxy then
-        return View('[no selected component]')
-      end
-      return View(proxy.type)
+  local selectedAddr_ = selectedComponentProxy_
+    :map(function(p)
+      return p and p.address or nil
     end)
 
-  local ui = combineLatest(componentsView_, selectedComponent_):map(horizontal)
+  local componentsView_ = components_
+    :with(selectedAddr_)
+    :map(function(components, selectedAddr)
+      return mapIndexed(function(name, addr)
+        local shortAddr = take(3, addr)
+        local styleEnhancer = selectedAddr == addr and withColor('yellow') or identity
+
+        return applyTo(View(name .. ' (' .. shortAddr .. ')' ))(
+          withClick(function() onClickComponent_(addr) end),
+          styleEnhancer
+      )(components)
+      end)
+    end)
+    :map(values)
+    :unpack()
+    :map(vertical)
+    :shareReplay(1)
+
+
+  local ui = combineLatest(componentsView_, selectedComponentProxy_)
+    :map(function(view, proxy)
+      local proxyView = proxy and View(proxy.type) or View('[no selected component]')
+      return horizontal(view, proxyView)
+    end)
 
   return {
     ui=ui
