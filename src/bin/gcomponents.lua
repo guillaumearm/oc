@@ -11,6 +11,7 @@ local mainCycle = function()
   local componentRemoved_ = fromEvent('component_removed')
 
   local components_ = merge(componentAdded_, componentRemoved_)
+    :delay(20)
     :map(function() return component.list() end)
     :startWith(initialComponents)
     :shareReplay(1)
