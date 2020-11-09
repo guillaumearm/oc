@@ -22,7 +22,10 @@ local mainCycle = function()
 
   local onClickComponent_ = Subject.create()
 
-  local selectedComponentProxy_ = combineLatest(of(initialSelectedAddr):concat(onClickComponent_), components_)
+  local selectedComponentProxy_ = combineLatest(
+    of(initialSelectedAddr):concat(onClickComponent_),
+    components_
+  )
     :map(function(addr, components)
       if not addr or not components[addr] then
         return nil
@@ -33,7 +36,8 @@ local mainCycle = function()
 
   local selectedAddr_ = selectedComponentProxy_
     :map(function(p)
-      return p and p.address or nil
+      if p then return p.address end
+      return nil
     end)
 
   local componentsView_ = components_
@@ -46,8 +50,8 @@ local mainCycle = function()
         return applyTo(View(name .. ' (' .. shortAddr .. ')' ))(
           withClick(function() onClickComponent_(addr) end),
           styleEnhancer
-      )(components)
-      end)
+        )
+      end, components)
     end)
     :map(values)
     :unpack()
