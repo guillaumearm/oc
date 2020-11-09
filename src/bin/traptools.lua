@@ -13,6 +13,7 @@ local PACKAGE_LIST = {
   'rx',
   'rx-extra',
   'cycle',
+  'gcomponents',
   "openos-patches",
   "libui",
   "libui-demo",

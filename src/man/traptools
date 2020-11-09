@@ -12,7 +12,7 @@ DESCRIPTION
 
 AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   wd
-  mediaxw
+  media
   redstone-onoff
   fs-extra
   persistable
@@ -24,6 +24,7 @@ AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   rx
   rx-extra*
   cycle*
+  gcomponents*
 
 
 Uninstall
