@@ -3,6 +3,7 @@
 local runCycle = require('cycle')
 local Button = require('cycle/Button')
 local InputText = require('cycle/InputText')
+local ListScroll = require('cycle/ListScroll')
 
 local Counter = function(initialValue)
   initialValue = initialValue or 0
@@ -48,14 +49,19 @@ local function mainCycle()
     :scanActions({
       add=function() return append(Counter(0)) end,
       remove=function() return dropLast(1)  end
-    }, {Counter(0), Counter(0), Counter(0)})
+    }, {Counter(0), Counter(0), Counter(0)}):shareReplay(1)
 
-  local countersView = counters:switchMap(function(cs)
+  local onScrollCounters = Subject.create()
+  local scrollableCounters = ListScroll(counters, of(2), onScrollCounters);
+
+  local countersView = scrollableCounters:switchMap(function(cs)
     if isEmpty(cs) then
       return of(vertical('', '', ''))
     end
     return combineLatest(unpack(cs)):map(horizontal)
-  end):map(withBgColor('red'))
+  end)
+    :map(withBgColor('red'))
+    :map(withScroll(onScrollCounters))
 
   local setInput = Subject.create()
 
