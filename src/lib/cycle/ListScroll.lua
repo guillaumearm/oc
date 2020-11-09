@@ -3,7 +3,10 @@ local getList = function(elements, nbDisplayedItems, scrollPosition)
   return take(nbDisplayedItems, scrolledElems)
 end
 
+local DEFAULT_NB_DISPLAYED = 5
+
 local ListScroll = function(elems_, nbDisplayed_, onScroll_)
+  nbDisplayed_ = nbDisplayed_ or of(DEFAULT_NB_DISPLAYED)
   onScroll_ = onScroll_ or NEVER
   local onScrollUp_ = onScroll_:pluck('type'):filter(identical(1)):mapTo('scrollup')
   local onScrollDown_ = onScroll_:pluck('type'):filter(identical(-1)):mapTo('scrolldown')
@@ -29,7 +32,7 @@ local ListScroll = function(elems_, nbDisplayed_, onScroll_)
     :startWith(1)
     :distinctUntilChanged()
 
-  return combineLatest(elems_:startWith({}), nbDisplayed_:startWith(0), scrollPosition_)
+  return combineLatest(elems_, nbDisplayed_, scrollPosition_)
     :map(getList):filter()
 end
 
