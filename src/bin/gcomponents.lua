@@ -20,7 +20,7 @@ local mainCycle = function()
   local componentsView_ = components_
     :map(mapIndexed(function(name, addr)
       local shortAddr = take(3, addr)
-      return applyTo(View(name .. '(' .. shortAddr .. ')' ))(
+      return applyTo(View(name .. ' (' .. shortAddr .. ')' ))(
         withClick(function() onClickComponent_(addr) end)
       )
     end))
@@ -40,13 +40,16 @@ local mainCycle = function()
 
   local selectedComponent_ = selectedComponentProxy_
     :map(function(proxy)
+      if not proxy then
+        return View('no selected component')
+      end
       return View(proxy.address)
     end)
 
-  combineLatest(componentsView_, selectedComponent_):map(horizontal)
+  local ui = combineLatest(componentsView_, selectedComponent_):map(horizontal)
 
   return {
-    ui=componentsView_
+    ui=ui
   }
 end
 
