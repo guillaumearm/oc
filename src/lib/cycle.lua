@@ -179,7 +179,7 @@ local createUiDrivers = function(getStopSubscription)
              x=scrollEvent.x - foundScroll.x + 1,
              y=scrollEvent.y - foundScroll.y + 1
            }
-           foundScroll.onClick(assign(scrollEvent, relativeScrollPosition, { stopPropagation=stopPropagation }))
+           foundScroll.onScroll(assign(scrollEvent, relativeScrollPosition, { stopPropagation=stopPropagation }))
          end
        end, foundScrolls)
     end)

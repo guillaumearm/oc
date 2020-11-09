@@ -276,7 +276,7 @@ local function shareWithSubject(this, subjectFactory)
           timeoutHandle = nil
           sourceSub:unsubscribe();
           sourceSub = Subscription.empty()
-        end, 20)
+        end, 0)
       end
     end)
 
