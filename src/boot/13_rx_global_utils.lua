@@ -282,6 +282,7 @@ local function shareWithSubject(this, subjectFactory)
 
     if refCount == 0 and timeoutHandle ~= nil then
       clearTimeout(timeoutHandle)
+      timeoutHandle = nil
     elseif refCount == 0 and timeoutHandle == nil then
       sourceSub = this:subscribe(Observer.create(
         function(...)
