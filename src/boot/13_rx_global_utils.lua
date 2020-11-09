@@ -250,6 +250,7 @@ end
 -- private share function
 local function shareWithSubject(this, subjectFactory)
   local refCount = 0
+  local timeoutHandle = nil
   local _subject = nil
   local sourceSub = Subscription.empty()
 
@@ -270,15 +271,18 @@ local function shareWithSubject(this, subjectFactory)
       refCount = refCount - 1
       subjectSub:unsubscribe();
 
-      -- setImmediate(function()
       if refCount == 0 then
-        sourceSub:unsubscribe();
-        sourceSub = Subscription.empty()
+        timeoutHandle = setTimeout(function()
+          timeoutHandle = nil
+          sourceSub:unsubscribe();
+          sourceSub = Subscription.empty()
+        end, 20)
       end
-      -- end)
     end)
 
-    if refCount == 0 then
+    if refCount == 0 and timeoutHandle ~= nil then
+      clearTimeout(timeoutHandle)
+    elseif refCount == 0 and timeoutHandle == nil then
       sourceSub = this:subscribe(Observer.create(
         function(...)
           subject:onNext(...)
