@@ -97,6 +97,7 @@ globals={
   "takeLastUntil",
   "head",
   "first",
+  "firstKey",
   "tail",
   "last",
   "lastIndex",

@@ -721,6 +721,19 @@ end
 
 _G.first = head
 
+_G.firstKey = function(t)
+  if isString(t) then return 1 end
+
+  local foundHeadKey = nil
+
+  forEach(function(_, k)
+    foundHeadKey = k
+    return stop
+  end, t)
+
+  return foundHeadKey
+end
+
 _G.tail = drop(1)
 
 _G.last = function(t)
