@@ -40,8 +40,7 @@ local mainCycle = function()
       return nil
     end)
 
-  local componentsView_ = components_
-    :with(selectedAddr_)
+  local componentsView_ = combineLatest(components_, selectedAddr_)
     :map(function(components, selectedAddr)
       return mapIndexed(function(name, addr)
         local shortAddr = take(3, addr)
