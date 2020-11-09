@@ -29,8 +29,7 @@ local DAEMONS_TO_ACTIVATE = {
 }
 
 local SYNC_FILES_TO_DOWNLOAD = {
-  'bin/demo/counters.lua',
-  'lib/cycle/InputText.lua',
+  'bin/gcomponents.lua',
   'bin/traptools.lua'
 }
 
