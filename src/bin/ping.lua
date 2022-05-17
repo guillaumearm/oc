@@ -4,6 +4,7 @@ local component = require('component');
 local event = require('event');
 
 local PING_PORT = 2;
+local TIMEOUT = 1;
 
 local function printUsage()
   print('Usage:')
@@ -25,7 +26,7 @@ local function pingAddr(addr)
 
   print('> ping: sending ping request to "' .. addr .. '"')
 
-  if modem.addr == addr then
+  if modem.address == addr then
     print('> ping: pong received locally.')
     return true;
   end
@@ -36,7 +37,7 @@ local function pingAddr(addr)
   modem.broadcast(PING_PORT, 'ping', request_id);
 
   while (true) do
-    local _, _, remoteAddr, port, _, result, request_id_response = event.pull(3, 'modem_message');
+    local _, _, remoteAddr, port, _, result, request_id_response = event.pull(TIMEOUT, 'modem_message');
 
     if port == nil then
       error('no response from the remote host (TIMEOUT)')

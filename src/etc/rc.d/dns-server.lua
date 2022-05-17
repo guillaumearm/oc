@@ -6,6 +6,8 @@ local rc = require('rc');
 local logger = require('log')('dns-server');
 local db = require('persistable')('hostnames', {});
 
+local DNS_PORT = 1;
+
 started = false;
 local _hostname = nil;
 
@@ -65,7 +67,7 @@ local function getHostnames(hostname, modemAddr)
 end
 
 local handleModemMessages = logger.wrap(function(_, _, fromAddr, port, _, ...)
-  if (port ~= 1) then return; end
+  if (port ~= DNS_PORT) then return; end
 
   local modem = component.modem;
   local message_type = ...
@@ -85,6 +87,7 @@ local handleModemMessages = logger.wrap(function(_, _, fromAddr, port, _, ...)
     data[fromAddr] = name;
     db.write(data);
     modem.send(fromAddr, port, 'register_ok');
+    modem.broadcast(DNS_PORT, 'sync', stringify(data))
 
   elseif message_type == 'unregister' then
     local data = db.get();
@@ -94,6 +97,7 @@ local handleModemMessages = logger.wrap(function(_, _, fromAddr, port, _, ...)
       data[fromAddr] = nil;
       db.write(data);
       modem.send(fromAddr, port, 'unregister_ok', name)
+      modem.broadcast(DNS_PORT, 'sync', stringify(data))
     else
       modem.send(fromAddr, port, 'unregister_ko', 'no name registered for this address')
     end
@@ -122,9 +126,9 @@ function start()
   local hostname = getHostname();
   local hostnames = getHostnames(hostname, modem.address);
 
-  modem.open(1);
+  modem.open(DNS_PORT);
 
-  modem.broadcast(1, 'sync', stringify(hostnames))
+  modem.broadcast(DNS_PORT, 'sync', stringify(hostnames))
 
   logger.clean()
   event.listen('modem_message', handleModemMessages)
@@ -138,7 +142,7 @@ function stop()
 
   local modem = getModem();
 
-  modem.close(1);
+  modem.close(DNS_PORT);
   event.ignore('modem_message', handleModemMessages)
 
   started = false;

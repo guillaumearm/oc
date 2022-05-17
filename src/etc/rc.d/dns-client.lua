@@ -6,6 +6,9 @@ local shell = require('shell');
 local logger = require('log')('dns-client');
 local db = require('persistable')('hostnames', {});
 
+local DNS_PORT = 1;
+local TIMEOUT = 2;
+
 started = false
 
 local function getModem()
@@ -33,17 +36,17 @@ api = {
 
     shell.execute('hostname ' .. name);
 
-    modem.broadcast(1, 'register', name);
+    modem.broadcast(DNS_PORT, 'register', name);
     while (true) do
-      local _, _, _, port, _, result, err = event.pull(3, 'modem_message');
+      local _, _, _, port, _, result, err = event.pull(TIMEOUT, 'modem_message');
 
       if port == nil then
         return false, 'TIMEOUT'
       end
 
-      if port == 1 and result == 'register_ok' then
+      if port == DNS_PORT and result == 'register_ok' then
         return true;
-      elseif port == 1 and result == 'register_ko' then
+      elseif port == DNS_PORT and result == 'register_ko' then
         return false, err;
       end
     end
@@ -51,17 +54,17 @@ api = {
   unregister = function()
     local modem = getModem();
 
-    modem.broadcast(1, 'unregister');
+    modem.broadcast(DNS_PORT, 'unregister');
     while (true) do
-      local _, _, _, port, _, result, err = event.pull(3, 'modem_message');
+      local _, _, _, port, _, result, err = event.pull(TIMEOUT, 'modem_message');
 
       if port == nil then
         return false, 'TIMEOUT'
       end
 
-      if port == 1 and result == 'unregister_ok' then
+      if port == DNS_PORT and result == 'unregister_ok' then
         return true;
-      elseif port == 1 and result == 'unregister_ko' then
+      elseif port == DNS_PORT and result == 'unregister_ko' then
         return false, err;
       end
     end
@@ -75,7 +78,7 @@ api = {
 }
 
 local handleModemMessages = logger.wrap(function(_, _, _, port, _, ...)
-  if (port ~= 1) then return; end
+  if (port ~= DNS_PORT) then return; end
 
   local message_type, data = ...
 
@@ -103,8 +106,8 @@ function start()
 
   local modem = getModem();
 
-  modem.open(1);
-  modem.broadcast(1, 'request');
+  modem.open(DNS_PORT);
+  modem.broadcast(DNS_PORT, 'request');
 
   logger.clean()
   event.listen('modem_message', handleModemMessages)
@@ -119,7 +122,7 @@ function stop()
 
   local modem = getModem();
 
-  modem.close(1);
+  modem.close(DNS_PORT);
   event.ignore('modem_message', handleModemMessages)
 
   started = false;

@@ -11,9 +11,10 @@ CLI USAGE
   $ echo 'setup a server host node'
   $ hostname ns
   $ rc dns-server start
+  $ rc dns-client disable
+  $ rc dns-server enable
 
   $ echo 'setup a client host node'
-  $ dns --help
   $ dns register client1
 
 API
