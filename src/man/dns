@@ -34,3 +34,6 @@ EXAMPLES
 
   local addr = dns.resolve('servername');
   assert(dns.lookup(addr) == 'servername')
+
+SEE ALSO
+  $ man ping

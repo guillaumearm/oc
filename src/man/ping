@@ -1,0 +1,17 @@
+NAME
+  ping, pingd
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  basic ping tool which work with pingd daemon and dns-client
+
+USAGE
+   ping <hostname> - try to ping a specific hostname on the network
+
+EXAMPLES
+  $ ping client1
+  $ ping client2
+  $ rc pingd restart
+

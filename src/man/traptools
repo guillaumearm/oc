@@ -25,6 +25,7 @@ AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   rx-extra*
   cycle*
   gcomponents*
+  dns
 
 
 Uninstall

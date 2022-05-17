@@ -29,11 +29,11 @@ api = {
       return false, 'invalid first parameter name'
     end
 
-    local modem = getModem()
+    local modem = getModem();
 
     shell.execute('hostname ' .. name);
-    modem.broadcast(1, 'register', name);
 
+    modem.broadcast(1, 'register', name);
     while (true) do
       local _, _, _, port, _, result, err = event.pull(3, 'modem_message');
 
@@ -41,17 +41,17 @@ api = {
         return false, 'TIMEOUT'
       end
 
-      if result == 'register_ok' then
+      if port == 1 and result == 'register_ok' then
         return true;
-      elseif result == 'register_ko' then
+      elseif port == 1 and result == 'register_ko' then
         return false, err;
       end
     end
   end,
   unregister = function()
-    local modem = getModem()
-    modem.broadcast(1, 'unregister');
+    local modem = getModem();
 
+    modem.broadcast(1, 'unregister');
     while (true) do
       local _, _, _, port, _, result, err = event.pull(3, 'modem_message');
 
@@ -59,9 +59,9 @@ api = {
         return false, 'TIMEOUT'
       end
 
-      if result == 'unregister_ok' then
+      if port == 1 and result == 'unregister_ok' then
         return true;
-      elseif result == 'unregister_ko' then
+      elseif port == 1 and result == 'unregister_ko' then
         return false, err;
       end
     end

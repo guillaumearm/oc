@@ -27,7 +27,8 @@ local PACKAGE_LIST = {
 local DAEMONS_TO_ACTIVATE = {
   "media",
   "redstone-onoff",
-  "dns-client"
+  "dns-client",
+  "pingd"
 }
 
 local SYNC_FILES_TO_DOWNLOAD = {
