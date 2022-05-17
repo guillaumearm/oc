@@ -1,0 +1,36 @@
+NAME
+  dns
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  Simple dns utilities (client and server)
+
+CLI USAGE
+  -- setup a server host
+  $ hostname ns
+  $ rc dns-server start -- should automatically stop the dns-client if started
+
+  -- setup a client host
+  $ hostname client1
+  $ dns register
+
+API
+  -- try to resolve the address from the name
+  resolve(name: string): string | nil
+
+  -- try to resolve the name from the address
+  lookup(addr: string): string | nil
+
+  -- try to register the given name with default modem address
+  register(name: string): boolean, string
+
+  -- try to unregister the default modem address
+  unregister(): boolean, string
+
+EXAMPLES
+  local dns = require('dns')
+
+  local addr = dns.resolve('servername');
+  assert(dns.lookup(addr) == 'servername')
