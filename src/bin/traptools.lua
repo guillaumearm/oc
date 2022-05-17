@@ -20,7 +20,8 @@ local PACKAGE_LIST = {
   "redstone-onoff",
   "media",
   "wd",
-  "shedit"
+  "shedit",
+  "dns"
 }
 
 local DAEMONS_TO_ACTIVATE = {
