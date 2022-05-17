@@ -80,7 +80,7 @@ local handleModemMessages = logger.wrap(function(_, _, fromAddr, port, _, ...)
 
     local isAlreadyRegistered = not not find(function(n, a) return a ~= fromAddr and n == name end)(data)
     if isAlreadyRegistered then
-      modem.send(fromAddr, port, 'register_ko', 'name is already registered')
+      modem.send(fromAddr, port, 'register_ko', 'name "'.. name .. '" is already registered')
       return;
     end
 

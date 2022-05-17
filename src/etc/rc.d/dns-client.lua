@@ -34,8 +34,6 @@ api = {
 
     local modem = getModem();
 
-    shell.execute('hostname ' .. name);
-
     modem.broadcast(DNS_PORT, 'register', name);
     while (true) do
       local _, _, _, port, _, result, err = event.pull(TIMEOUT, 'modem_message');
@@ -45,6 +43,8 @@ api = {
       end
 
       if port == DNS_PORT and result == 'register_ok' then
+        shell.execute('hostname ' .. name);
+        os.setenv('HOSTNAME', name);
         return true;
       elseif port == DNS_PORT and result == 'register_ko' then
         return false, err;
