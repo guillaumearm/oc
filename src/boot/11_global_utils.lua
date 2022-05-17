@@ -1483,7 +1483,7 @@ _G.clearInterval = clearTimeout
 -----------------------------
 
 local function dumpTable(tbl, indent)
-  if not (type(tbl) == 'table') then
+  if type(tbl) ~= 'table' then
     print(tbl)
     return nil
   end

@@ -60,9 +60,9 @@ local function runUI(view, updater, handler, ...)
   end
 
   return runEvents(events, eventUpdater, function(prevState, state, eName, ...)
-    if not (prevState == state) then
+    if prevState ~= state then
       local element = view(state)
-      if not (previousRenderedElement == element) then
+      if previousRenderedElement ~= element then
         render(element)
         previousRenderedElement = element
       end

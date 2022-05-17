@@ -7,7 +7,7 @@ local logger = require('log')('dns-server');
 local db = require('persistable')('hostnames', {});
 
 started = false;
-_hostname = nil;
+local _hostname = nil;
 
 api = {
   register = function()
@@ -43,6 +43,7 @@ local function getHostname()
     return _hostname;
   end
 
+  local err;
   _hostname, err = fse.readFile('/etc/hostname');
 
   if err or isEmpty(_hostname) then
@@ -63,7 +64,7 @@ local function getHostnames(hostname, modemAddr)
   return hostnames;
 end
 
-local handleModemMessages = logger.wrap(function(_, toAddr, fromAddr, port, distance, ...)
+local handleModemMessages = logger.wrap(function(_, _, fromAddr, port, _, ...)
   if (port ~= 1) then return; end
 
   local modem = component.modem;

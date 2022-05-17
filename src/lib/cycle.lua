@@ -105,7 +105,7 @@ local createUiDrivers = function(getStopSubscription)
 
   local renderObserver = Rx.Observer.create(
     logger.wrap(function(element) -- onNext
-      if not (previousRenderedElement == element) then
+      if previousRenderedElement ~= element then
         render(element)
         previousRenderedElement = element
       end

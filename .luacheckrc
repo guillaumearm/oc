@@ -316,6 +316,9 @@ globals={
   "io",
   "os",
   "start",
+  "restart",
+  "status",
   "reload",
-  "started"
+  "started",
+  "api"
 }
