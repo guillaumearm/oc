@@ -115,7 +115,7 @@ function start()
   if started then return; end
 
   if isDnsClientStarted() then
-    error('cannot start dns-server because dns-client is running!')
+    rc.loaded['dns-client'].stop();
   end
 
   local modem = getModem();

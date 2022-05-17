@@ -8,13 +8,13 @@ DESCRIPTION
   Simple dns utilities (client and server)
 
 CLI USAGE
-  -- setup a server host
+  $ echo 'setup a server host node'
   $ hostname ns
-  $ rc dns-server start -- should automatically stop the dns-client if started
+  $ rc dns-server start
 
-  -- setup a client host
-  $ hostname client1
-  $ dns register
+  $ echo 'setup a client host node'
+  $ dns --help
+  $ dns register client1
 
 API
   -- try to resolve the address from the name

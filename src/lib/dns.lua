@@ -14,17 +14,17 @@ local execMethod = function(methodName, ...)
 end
 
 local api = {
-	register = function(name)
-		return execMethod("register", name)
+	register = function(name, ...)
+		return execMethod("register", name, ...)
 	end,
-	unregister = function()
-		return execMethod("unregister")
+	unregister = function(...)
+		return execMethod("unregister", ...)
 	end,
-	resolve = function(name)
-		return execMethod("resolve", name)
+	resolve = function(name, ...)
+		return execMethod("resolve", name, ...)
 	end,
-	lookup = function(addr)
-		return execMethod("lookup", addr)
+	lookup = function(addr, ...)
+		return execMethod("lookup", addr, ...)
 	end,
 }
 
