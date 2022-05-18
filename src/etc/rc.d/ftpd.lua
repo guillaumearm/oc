@@ -59,6 +59,10 @@ local function moveTempFile(tx)
   local tmpPath = getTmpPath(tx.id);
   local fullPath = tx.fullpath;
 
+  if not tx.force and fs.exists(fullPath) then
+    return false, 'Error: cannot overwrite an existing file at "' .. fullPath .. '"';
+  end
+
   if fs.exists(tmpPath) then
     -- create the directory if doesn't exist
     fs.makeDirectory(fs.path(fullPath));
@@ -70,7 +74,7 @@ local function moveTempFile(tx)
   return false, 'Error: tmp file does not found!';
 end
 
-local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size)
+local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, force)
   local modem = getModem();
   local tx = txs[txid];
 
@@ -81,7 +85,7 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size)
 
   local fullpath = fs.concat(FTP_ROOT, fs.canonical(filepath));
 
-  if fs.exists(fullpath) then
+  if not force and fs.exists(fullpath) then
     modem.send(remoteAddr, port, 'tx_refused', txid, 'file "' .. filepath .. '" already exists!');
     return;
   end
@@ -89,6 +93,7 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size)
   removeTmpFile(txid);
 
   txs[txid] = {
+    force = force, -- put/putforce
     id = txid,
     fullpath = fullpath,
     filepath = filepath,
@@ -156,7 +161,10 @@ local handleModemMessages = logger.wrap(function(_, _, remoteAddr, port, _, mess
 
   if message_type == 'put' then
     local filepath, size = ...;
-    cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size);
+    cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, false);
+  elseif message_type == 'putforce' then
+    local filepath, size = ...;
+    cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, true);
   elseif message_type == 'put_transfer' then
     local data = ...;
     cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data);
