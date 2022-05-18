@@ -117,7 +117,6 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, force)
   };
 
   modem.send(remoteAddr, port, 'tx_accepted', txid);
-  logger.write('> transaction "' .. txid .. '" created!');
 end
 
 local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
