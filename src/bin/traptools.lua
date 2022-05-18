@@ -21,7 +21,8 @@ local PACKAGE_LIST = {
   "media",
   "wd",
   "shedit",
-  "dns"
+  "dns",
+  "ftp"
 }
 
 local DAEMONS_TO_ACTIVATE = {
@@ -94,8 +95,8 @@ end
 local SYNC_PREFIX_URL = 'https://raw.githubusercontent.com/guillaumearm/oc/master/src/'
 
 local syncCommand = function()
-    -- init global utils
-    exec('/boot/11_global_utils');
+  -- init global utils
+  exec('/boot/11_global_utils');
 
   forEach(function(file)
     print('> Downloading ' .. file)
