@@ -116,14 +116,14 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
     modem.send(remoteAddr, port, 'tx_failure', txid, 'bad buffer size!');
     cleanTransaction(txid);
   elseif tx.remaining_size == 0 then
-    local ok, err = moveTempFile(tx);
+    local ok, moveTempFileErr = moveTempFile(tx);
 
     if ok then
       logger.write('> file "' .. tx.filepath .. '" transfered!');
       modem.send(remoteAddr, port, 'tx_success', txid);
     else
-      logger.write(err);
-      modem.send(remoteAddr, port, 'tx_failure', txid, err);
+      logger.write(tostring(moveTempFileErr));
+      modem.send(remoteAddr, port, 'tx_failure', txid, moveTempFileErr);
     end
 
     cleanTransaction(txid);
