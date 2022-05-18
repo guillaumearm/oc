@@ -4,7 +4,7 @@ local event = require('event');
 local component = require('component');
 local computer = require('computer');
 local dns = require('dns');
-local fs = require('fs');
+local fs = require('filesystem');
 local fse = require('fs-extra');
 
 -- in ms
@@ -21,6 +21,15 @@ end
 
 local function isFile(path)
   return fs.exists(path) and not fs.isDirectory(path);
+end
+
+local function getFullLocalPath(path)
+  if first(path) == '/' then
+    return path;
+  end
+
+  local cwd = os.getenv('PWD');
+  return fs.canonical(fs.concat(cwd, path))
 end
 
 local function getFullTargetPath(localPath, targetPath)
@@ -156,6 +165,8 @@ end
 ---------------
 
 local function ftp_put(hostname, localPath, targetPath, force)
+  localPath = getFullLocalPath(localPath);
+
   if not isFile(localPath) then
     return false, 'Error: "' .. localPath .. '" is not a valid file.'
   end
@@ -207,7 +218,7 @@ end
 local function main()
   local hostname = 'client2';
   local localPath = './file';
-  local targetPath = getFullTargetPath(localPath, '/');
+  local targetPath = getFullTargetPath(localPath, '/file');
   local putforce = true;
 
   print('> transfering "' .. localPath .. '" file to remote "' .. targetPath .. '"...');
