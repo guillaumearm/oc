@@ -58,8 +58,9 @@ end
 local function moveTempFile(tx)
   local tmpPath = getTmpPath(tx.id);
   local fullPath = tx.fullpath;
+  local fullPathExist = fs.exists(fullPath);
 
-  if not tx.force and fs.exists(fullPath) then
+  if not tx.force and fullPathExist then
     return false, 'Error: cannot overwrite an existing file at "' .. fullPath .. '"';
   end
 
@@ -67,8 +68,22 @@ local function moveTempFile(tx)
     -- create the directory if doesn't exist
     fs.makeDirectory(fs.path(fullPath));
 
+    if tx.force and fullPathExist then
+      local rmOk, rmErr = fs.remove(fullPath);
+
+      if not rmOk then
+        return false, ternary(rmErr, rmErr, 'Error: cannot remove "' .. fullPath .. '" file!');
+      end
+    end
+
     -- move the file
-    return fs.rename(tmpPath, fullPath);
+    local ok, err = fs.rename(tmpPath, fullPath);
+
+    if not ok then
+      return false, ternary(err, err, 'Error: cannot move tmp file!');
+    end
+
+    return true;
   end
 
   return false, 'Error: tmp file does not found!';
