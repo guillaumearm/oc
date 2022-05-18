@@ -7,7 +7,7 @@ local logger = require('log')('ftpd');
 
 local FTP_PORT = 21;
 local FTP_ROOT = '/var/ftp/';
-local TMP_DIR = '/tmp/';
+local TMP_DIR = '/var/tmp_ftp/';
 
 -- in ms
 local TIMEOUT = 3 * 1000;
@@ -15,9 +15,6 @@ local TIMEOUT = 3 * 1000;
 local txs = {};
 
 started = false
-
--- TODO: improve the getDirname function
-local getDirname = compose(join('/'), dropLast(1), split('/'));
 
 local function getModem()
   local modem = component.modem;
@@ -29,9 +26,13 @@ local function getModem()
   return modem;
 end
 
+local function getTmpPath(txid)
+  return fs.concat(TMP_DIR, txid);
+end
+
 -- remove temp transaction file if exists
 local function removeTmpFile(txid)
-  local tmpPath = TMP_DIR .. txid;
+  local tmpPath = getTmpPath(txid);
 
   if fs.exists(tmpPath) then
     fs.remove(tmpPath);
@@ -55,12 +56,12 @@ local function cleanTransaction(txid)
 end
 
 local function moveTempFile(tx)
-  local tmpPath = TMP_DIR .. tx.id;
+  local tmpPath = getTmpPath(tx.id);
   local fullPath = tx.fullpath;
 
   if fs.exists(tmpPath) then
     -- create the directory if doesn't exist
-    fs.makeDir(getDirname(fullPath));
+    fs.makeDirectory(fs.path(fullPath));
 
     -- move the file
     return fs.rename(tmpPath, fullPath);
@@ -111,8 +112,17 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
 
   tx.disposeTimeout();
 
-  local tmpPath = TMP_DIR .. txid;
-  fse.appendFile(tmpPath, data);
+  local tmpPath = getTmpPath(txid);
+  local ok, err = fse.appendFile(tmpPath, data);
+
+  if not ok or err then
+    local errMsg = 'appendFile error "' .. tostring(err) .. '"';
+    logger.write('put_transfer error: ' .. errMsg);
+    modem.send(remoteAddr, port, 'tx_failure', txid, errMsg);
+    cleanTransaction(txid);
+    return;
+  end
+
   tx.remaining_size = tx.remaining_size - #data;
 
   if tx.remaining_size < 0 then
@@ -120,9 +130,9 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
     modem.send(remoteAddr, port, 'tx_failure', txid, 'bad buffer size!');
     cleanTransaction(txid);
   elseif tx.remaining_size == 0 then
-    local ok, moveTempFileErr = moveTempFile(tx);
+    local moveOk, moveTempFileErr = moveTempFile(tx);
 
-    if ok then
+    if moveOk and not moveTempFileErr then
       logger.write('> file "' .. tx.filepath .. '" transfered!');
       modem.send(remoteAddr, port, 'tx_success', txid);
     else
