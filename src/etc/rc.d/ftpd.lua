@@ -16,6 +16,9 @@ local txs = {};
 
 started = false
 
+-- TODO: improve the getDirname function
+local getDirname = compose(join('/'), dropLast(1), split('/'));
+
 local function getModem()
   local modem = component.modem;
 
@@ -56,6 +59,10 @@ local function moveTempFile(tx)
   local fullPath = tx.fullpath;
 
   if fs.exists(tmpPath) then
+    -- create the directory if doesn't exist
+    fs.makeDir(getDirname(fullPath));
+
+    -- move the file
     return fs.rename(tmpPath, fullPath);
   end
 
@@ -71,10 +78,7 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size)
     return;
   end
 
-  -- TODO: path resolve ?
-  local fullpath = FTP_ROOT .. filepath;
-
-  -- TODO: check if the fullpath contains the FTP_ROOT
+  local fullpath = fs.concat(FTP_ROOT, fs.canonical(filepath));
 
   if fs.exists(fullpath) then
     modem.send(remoteAddr, port, 'tx_refused', txid, 'file "' .. filepath .. '" already exists!');
