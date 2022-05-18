@@ -107,7 +107,8 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
 
   tx.disposeTimeout();
 
-  fse.appendFile(tx.fullpath, data);
+  local tmpPath = TMP_DIR .. txid;
+  fse.appendFile(tmpPath, data);
   tx.remaining_size = tx.remaining_size - #data;
 
   if tx.remaining_size < 0 then
@@ -115,7 +116,6 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
     modem.send(remoteAddr, port, 'tx_failure', txid, 'bad buffer size!');
     cleanTransaction(txid);
   elseif tx.remaining_size == 0 then
-    -- TODO: move temp file to correct location
     local ok, err = moveTempFile(tx);
 
     if ok then
