@@ -17,6 +17,9 @@ API
   readTable(path) => (table, error)
   writeTable(path, table, prettyOutput) => (boolean, error)
 
+  -- the returned table here has relative path as keys and file size as values
+  getFilesInfo(dirpath) => (table | nil, error)
+
 EXAMPLES
   fse.writeFile('/tmp/a-string', 'Hello World');
   local str = fse.readFile('/tmp/a-string');
