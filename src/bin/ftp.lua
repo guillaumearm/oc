@@ -13,7 +13,9 @@ local TIMEOUT = 2 * 1000
 local FTP_PORT = 21;
 local BUF_SIZE = 4096;
 
+----------------------------------------------------------------
 -- utils
+----------------------------------------------------------------
 local function cut_string(str, n)
   n = n or 0
   return string.sub(str, 1, n), string.sub(str, n + 1)
@@ -50,13 +52,14 @@ local function getFullTargetPath(localPath, targetPath)
   return fs.canonical(targetPath);
 end
 
------------------------------------------------------------
--- FTP LIB
------------------------------------------------------------
+----------------------------------------------------------------
 
----------------
-
-local function initTransaction(ftpCmd, remoteAddr, targetPath, fileSize, txid)
+----------------------------------------------------------------
+-- initTransaction
+--
+-- filesInfo is a number when ftpCmd == 'put' or ftp == 'putforce' (not recusrive)
+----------------------------------------------------------------
+local function initTransaction(ftpCmd, remoteAddr, targetPath, filesInfo, txid)
   -- wait for response 'tx_accepted' | 'tx_refused'
   local eventId = event.listen('modem_message', function(_, _, targetAddr, port, _, message_type, txid_response, err)
     if port ~= FTP_PORT or targetAddr ~= remoteAddr or txid ~= txid_response then return; end
@@ -73,7 +76,7 @@ local function initTransaction(ftpCmd, remoteAddr, targetPath, fileSize, txid)
   end, TIMEOUT);
 
   -- send the transaction
-  component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, targetPath, fileSize);
+  component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, targetPath, filesInfo);
 
   -- wait for response
   local _, _, message_type, errTx = event.pull('tx_done', txid);
@@ -91,9 +94,14 @@ local function initTransaction(ftpCmd, remoteAddr, targetPath, fileSize, txid)
   return true;
 end
 
----------------
+----------------------------------------------------------------
 
-local function sendPackets(remoteAddr, fileContent, txid)
+----------------------------------------------------------------
+-- sendPackets
+--
+-- targetPath is not used when ftpCmd == 'put_transfer'
+----------------------------------------------------------------
+local function sendPackets(remoteAddr, targetPath, fileContent, txid, ftpCmd)
   local allSent = false;
 
   local found_failure;
@@ -126,7 +134,12 @@ local function sendPackets(remoteAddr, fileContent, txid)
     toSend = rest;
 
     if #buf > 0 then
-      local ok, err = component.modem.send(remoteAddr, FTP_PORT, 'put_transfer', txid, buf);
+      local ok, err;
+      if ftpCmd == 'put_transfer' then
+        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, buf);
+      else -- otherwise it's a 'putrec_transfer' command
+        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, targetPath, buf);
+      end
       if not ok then
         return false, '> modem.send error: ' .. tostring(err);
       end
@@ -162,8 +175,11 @@ local function sendPackets(remoteAddr, fileContent, txid)
   return false, 'Error: transaction failure: ' .. tostring(err);
 end
 
----------------
+----------------------------------------------------------------
 
+----------------------------------------------------------------
+-- ftp_put
+----------------------------------------------------------------
 local function ftp_put(hostname, localPath, targetPath, force)
   localPath = getFullLocalPath(localPath);
 
@@ -202,7 +218,7 @@ local function ftp_put(hostname, localPath, targetPath, force)
   end
 
   -- transfer packets
-  local ok, err = sendPackets(remoteAddr, fileContent, txid);
+  local ok, err = sendPackets(remoteAddr, targetPath, fileContent, txid, 'put_transfer');
 
   component.modem.close(FTP_PORT);
 
@@ -213,17 +229,83 @@ local function ftp_put(hostname, localPath, targetPath, force)
   return true;
 end
 
------------------------------------------------------------
+----------------------------------------------------------------
+-- ftp_putrec
+----------------------------------------------------------------
+local function ftp_putrec(hostname, localPath, targetPath, force)
+  localPath = getFullLocalPath(localPath);
+
+  if not isFile(localPath) then
+    return false, 'Error: "' .. localPath .. '" is not a valid file.'
+  end
+
+
+  local remoteAddr = dns.resolve(hostname);
+
+  if not remoteAddr then
+    return false, 'Error: unable to resolve "' .. hostname .. '" hostname';
+  end
+
+  -- 1. getFilesInfo
+  local filesInfo, errInfo = fse.getFilesInfo(localPath);
+
+  if not filesInfo or errInfo then
+    return false, 'Error: ' .. tostring(errInfo);
+  end
+
+  -- 2. init transaction
+  local cmd = ternary(force, 'putrecforce', 'putrec');
+  targetPath = getFullTargetPath(localPath, targetPath);
+
+  component.modem.open(FTP_PORT);
+
+  local txid = uuid.next();
+  local txOk, txErr = initTransaction(cmd, remoteAddr, targetPath, filesInfo, txid);
+
+  if txErr or not txOk then
+    component.modem.close(FTP_PORT);
+    return false, tostring(txErr);
+  end
+
+  -- 3. for each file to send: readFile then sendPackets
+  for filePath in pairs(filesInfo) do
+    local fullLocalPath = fs.concat(localPath, filePath);
+
+    local fileContent, readErr = fse.readFile(fullLocalPath);
+
+    if not fileContent or readErr then
+      component.modem.close(FTP_PORT);
+      return false, tostring(readErr);
+    end
+
+    -- transfer packets
+    local ok, err = sendPackets(remoteAddr, targetPath, fileContent, txid, 'put_transfer');
+
+    if err or not ok then
+      component.modem.close(FTP_PORT);
+      return false, tostring(err);
+    end
+  end
+
+  component.modem.close(FTP_PORT);
+  return true;
+end
+
+----------------------------------------------------------------
 
 local function main()
   local hostname = 'client2';
-  local localPath = './file';
-  local targetPath = getFullTargetPath(localPath, '/file');
-  local putforce = true;
+  local localPath = '/home';
+  local targetPath = getFullTargetPath(localPath, '/');
+  local putforce = false;
 
   print('> transfering "' .. localPath .. '" file to remote "' .. targetPath .. '"...');
 
-  local ok, err = ftp_put(hostname, localPath, targetPath, putforce);
+  -- local ok, err = ftp_put(hostname, localPath, targetPath, putforce);
+  -- TODO: remove this
+  noop(ftp_put);
+
+  local ok, err = ftp_putrec(hostname, localPath, targetPath, putforce);
 
   if ok then
     print('> done.')
