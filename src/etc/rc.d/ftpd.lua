@@ -216,7 +216,7 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
   local files = {};
   local totalSize = 0;
 
-  for filepath, filesize in filesInfo do
+  for filepath, filesize in pairs(filesInfo) do
     local fullpath = fs.concat(FTP_ROOT, dirpath, fs.canonical(filepath));
 
     if not force and fs.exists(fullpath) then
