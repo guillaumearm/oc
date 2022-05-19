@@ -12,9 +12,17 @@ local TMP_DIR = '/var/tmp_ftp/';
 -- in ms
 local TIMEOUT = 3 * 1000;
 
+-- used by `put` and `putforce`
 local txs = {};
 
+-- used by `putrec` and `putforcerec`
+local rec_txs = {}
+
 started = false
+
+---------------------------------------------------------------
+-- Utils functions
+---------------------------------------------------------------
 
 local function getModem()
   local modem = component.modem;
@@ -30,16 +38,20 @@ local function getTmpPath(txid)
   return fs.concat(TMP_DIR, txid);
 end
 
--- remove temp transaction file if exists
-local function removeTmpFile(txid)
-  local tmpPath = getTmpPath(txid);
-
-  if fs.exists(tmpPath) then
-    fs.remove(tmpPath);
+-- remove a file if exists
+local function removeFile(path)
+  if fs.exists(path) then
+    fs.remove(path);
     return true;
   end
 
   return false;
+end
+
+-- remove temp file from transaction id
+local function removeTmpFileFromTxId(txid)
+  local tmpPath = getTmpPath(txid);
+  return removeFile(tmpPath);
 end
 
 -- remove transaction + associated temp file
@@ -48,7 +60,23 @@ local function cleanTransaction(txid)
 
   if tx then
     txs[txid] = nil;
-    removeTmpFile(txid);
+    removeTmpFileFromTxId(txid);
+    return true;
+  end
+
+  return false;
+end
+
+-- remove recusive transaction + associated temp files
+local function cleanRecTransaction(txid)
+  local tx = rec_txs[txid];
+
+  if tx then
+    forEach(function(file)
+      removeFile(file.path)
+    end, tx.files);
+
+    txs[txid] = nil;
     return true;
   end
 
@@ -89,6 +117,9 @@ local function moveTempFile(tx)
   return false, 'Error: tmp file does not found!';
 end
 
+---------------------------------------------------------------
+-- Command put/putforce
+---------------------------------------------------------------
 local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, force)
   local modem = getModem();
   local tx = txs[txid];
@@ -105,7 +136,9 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, force)
     return;
   end
 
-  removeTmpFile(txid);
+  if force then
+    removeTmpFileFromTxId(txid);
+  end
 
   txs[txid] = {
     force = force, -- put/putforce
@@ -119,6 +152,9 @@ local function cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, force)
   modem.send(remoteAddr, port, 'tx_accepted', txid);
 end
 
+---------------------------------------------------------------
+-- put_transfer (triggered by `put` and `putforce` command)
+---------------------------------------------------------------
 local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
   local modem = getModem();
   local tx = txs[txid]
@@ -135,7 +171,7 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
   local ok, err = fse.appendFile(tmpPath, data);
 
   if not ok or err then
-    local errMsg = 'appendFile error "' .. tostring(err) .. '"';
+    local errMsg = 'appendFile error (put_transfer) "' .. tostring(err) .. '"';
     logger.write('put_transfer error: ' .. errMsg);
     modem.send(remoteAddr, port, 'tx_failure', txid, errMsg);
     cleanTransaction(txid);
@@ -146,7 +182,7 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
 
   if tx.remaining_size < 0 then
     logger.write('put_transfer error: bad buffer size!');
-    modem.send(remoteAddr, port, 'tx_failure', txid, 'bad buffer size!');
+    modem.send(remoteAddr, port, 'tx_failure', txid, '[putrec_transfer] bad buffer size!');
     cleanTransaction(txid);
   elseif tx.remaining_size == 0 then
     local moveOk, moveTempFileErr = moveTempFile(tx);
@@ -165,27 +201,150 @@ local function cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data)
   end
 end
 
+---------------------------------------------------------------
+-- Command putrec/putforcerec (recursive put)
+---------------------------------------------------------------
+local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo, force)
+  local modem = getModem();
+  local tx = rec_txs[txid];
+
+  if tx then
+    modem.send(remoteAddr, port, 'tx_refused', txid, 'transaction id already exists!')
+    return;
+  end
+
+  local files = {};
+  local totalSize = 0;
+
+  for filepath, filesize in filesInfo do
+    local fullpath = fs.concat(FTP_ROOT, dirpath, fs.canonical(filepath));
+
+    if not force and fs.exists(fullpath) then
+      modem.send(remoteAddr, port, 'tx_refused', txid, 'file "' .. filepath .. '" already exists!');
+      return;
+    end
+
+    if force then
+      removeTmpFileFromTxId(txid);
+    end
+
+    totalSize = totalSize + filesize;
+
+    files[filepath] = {
+      dirpath = dirpath,
+      filepath = filepath,
+      fullpath = fullpath,
+      filesize = filesize
+    };
+  end
+
+  rec_txs[txid] = {
+    force = force, -- putrec/putforcerec
+    id = txid,
+    files = files,
+    remaining_size = totalSize;
+    disposeTimeout = setTimeout(timeoutFn, TIMEOUT)
+  }
+
+  modem.send(remoteAddr, port, 'tx_accepted', txid);
+end
+
+---------------------------------------------------------------
+-- putrec_transfer (triggered by `putrec` and `putforcerec` command)
+---------------------------------------------------------------
+local function cmd_putrec_transfer(timeoutFn, remoteAddr, port, txid, filepath, data)
+  local modem = getModem();
+  local tx = txs[txid]
+
+  if not tx then
+    logger.write('putrec_transfer error: no transaction found!');
+    modem.send(remoteAddr, port, 'tx_failure', txid, 'no transaction found!');
+    return;
+  end
+
+  if not tx.files[filepath] then
+    logger.write('putrec_transfer error: "' .. filepath .. '" file not found!');
+    modem.send(remoteAddr, port, 'tx_failure', txid, '"' .. filepath .. '" file not found!');
+    return;
+  end
+
+  tx.disposeTimeout();
+
+  local tmpPath = fs.canonical(fs.concat(getTmpPath(txid), filepath));
+
+  local ok, err = fse.appendFile(tmpPath, data);
+
+  if not ok or err then
+    local errMsg = 'appendFile error (putrec_transfer) "' .. tostring(err) .. '"';
+    logger.write('putrec_transfer error: ' .. errMsg);
+    modem.send(remoteAddr, port, 'tx_failure', txid, errMsg);
+    cleanRecTransaction(txid);
+    return;
+  end
+
+  tx.remaining_size = tx.remaining_size - #data;
+
+  if tx.remaining_size < 0 then
+    logger.write('putrec_transfer error: bad buffer size!');
+    modem.send(remoteAddr, port, 'tx_failure', txid, '[putrec_transfer] bad buffer size!');
+    cleanRecTransaction(txid);
+  elseif tx.remaining_size == 0 then
+    local moveOk, moveTempFileErr = moveTempFile(tx);
+
+    if moveOk and not moveTempFileErr then
+      logger.write('> file "' .. filepath .. '" transfered!');
+      modem.send(remoteAddr, port, 'tx_success', txid);
+    else
+      logger.write(tostring(moveTempFileErr));
+      modem.send(remoteAddr, port, 'tx_failure', txid, moveTempFileErr);
+    end
+
+    cleanRecTransaction(txid);
+  else
+    tx.disposeTimeout = setTimeout(timeoutFn, TIMEOUT);
+  end
+end
+
+---------------------------------------------------------------
+-- Handle modem messages
+---------------------------------------------------------------
 local handleModemMessages = logger.wrap(function(_, _, remoteAddr, port, _, message_type, txid, ...)
   if (port ~= FTP_PORT or isEmpty(txid)) then return; end
 
-  local timeoutFn = function()
+  local timeoutFnPut = function()
     logger.write('put error: transaction TIMEOUT!')
     cleanTransaction(txid);
   end
 
+  local firstArg = ...;
+
+  local timeoutFnPutRec = function()
+    logger.write('recursive put error: transaction TIMEOUT!')
+    local filesInfo = firstArg;
+    cleanRecTransaction(filesInfo);
+  end
+
   if message_type == 'put' then
     local filepath, size = ...;
-    cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, false);
+    cmd_put(timeoutFnPut, remoteAddr, port, txid, filepath, size, false);
   elseif message_type == 'putforce' then
     local filepath, size = ...;
-    cmd_put(timeoutFn, remoteAddr, port, txid, filepath, size, true);
+    cmd_put(timeoutFnPut, remoteAddr, port, txid, filepath, size, true);
   elseif message_type == 'put_transfer' then
     local data = ...;
-    cmd_put_transfer(timeoutFn, remoteAddr, port, txid, data);
+    cmd_put_transfer(timeoutFnPut, remoteAddr, port, txid, data);
+  elseif message_type == 'putrec' then
+    local dirpath, filesInfo = ...;
+    cmd_putrec(timeoutFnPutRec, remoteAddr, port, txid, dirpath, filesInfo, false);
+  elseif message_type == 'putrec_transfer' then
+    local filepath, data = ...;
+    cmd_putrec_transfer(timeoutFnPutRec, remoteAddr, port, txid, filepath, data);
   end
 end)
 
-
+---------------------------------------------------------------
+-- Daemon implementation
+---------------------------------------------------------------
 function start()
   if started then return; end
 
@@ -211,7 +370,7 @@ function stop()
   -- cleanup txs
   forEach(function(tx, txid)
     tx.disposeTimeout();
-    removeTmpFile(txid);
+    removeTmpFileFromTxId(txid);
   end, txs);
   txs = {};
 
