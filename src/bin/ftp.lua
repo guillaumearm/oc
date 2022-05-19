@@ -279,7 +279,7 @@ local function ftp_putrec(hostname, localPath, targetPath, force)
     end
 
     -- transfer packets
-    local ok, err = sendPackets(remoteAddr, targetPath, fileContent, txid, 'put_transfer');
+    local ok, err = sendPackets(remoteAddr, targetPath, fileContent, txid, 'putrec_transfer');
 
     if err or not ok then
       component.modem.close(FTP_PORT);

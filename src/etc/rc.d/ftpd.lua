@@ -254,7 +254,7 @@ end
 ---------------------------------------------------------------
 local function cmd_putrec_transfer(timeoutFn, remoteAddr, port, txid, filepath, data)
   local modem = getModem();
-  local tx = txs[txid]
+  local tx = rec_txs[txid]
 
   if not tx then
     logger.write('putrec_transfer error: no transaction found!');
@@ -326,16 +326,21 @@ local handleModemMessages = logger.wrap(function(_, _, remoteAddr, port, _, mess
 
   if message_type == 'put' then
     local filepath, size = ...;
+
     cmd_put(timeoutFnPut, remoteAddr, port, txid, filepath, size, false);
   elseif message_type == 'putforce' then
     local filepath, size = ...;
+
     cmd_put(timeoutFnPut, remoteAddr, port, txid, filepath, size, true);
   elseif message_type == 'put_transfer' then
     local data = ...;
+
     cmd_put_transfer(timeoutFnPut, remoteAddr, port, txid, data);
-  elseif message_type == 'putrec' then
+  elseif message_type == 'putrec' or message_type == 'putrecforce' then
+    local forced = message_type == 'putrecforce';
     local dirpath, filesInfo = ...;
-    cmd_putrec(timeoutFnPutRec, remoteAddr, port, txid, dirpath, parse(filesInfo), false);
+
+    cmd_putrec(timeoutFnPutRec, remoteAddr, port, txid, dirpath, parse(filesInfo), forced);
   elseif message_type == 'putrec_transfer' then
     local filepath, data = ...;
     cmd_putrec_transfer(timeoutFnPutRec, remoteAddr, port, txid, filepath, data);
