@@ -184,7 +184,7 @@ local function ftp_put(hostname, localPath, targetPath, force)
   localPath = getFullLocalPath(localPath);
 
   if not isFile(localPath) then
-    return false, 'Error: "' .. localPath .. '" is not a valid file.'
+    return false, 'Error: "' .. localPath .. '" is not a valid file!'
   end
 
 
@@ -235,8 +235,8 @@ end
 local function ftp_putrec(hostname, localPath, targetPath, force)
   localPath = getFullLocalPath(localPath);
 
-  if not isFile(localPath) then
-    return false, 'Error: "' .. localPath .. '" is not a valid file.'
+  if not fs.isDirectory(localPath) then
+    return false, 'Error: "' .. localPath .. '" is not a valid directory!'
   end
 
 
@@ -260,7 +260,7 @@ local function ftp_putrec(hostname, localPath, targetPath, force)
   component.modem.open(FTP_PORT);
 
   local txid = uuid.next();
-  local txOk, txErr = initTransaction(cmd, remoteAddr, targetPath, filesInfo, txid);
+  local txOk, txErr = initTransaction(cmd, remoteAddr, targetPath, stringify(filesInfo), txid);
 
   if txErr or not txOk then
     component.modem.close(FTP_PORT);

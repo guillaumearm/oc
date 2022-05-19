@@ -335,7 +335,7 @@ local handleModemMessages = logger.wrap(function(_, _, remoteAddr, port, _, mess
     cmd_put_transfer(timeoutFnPut, remoteAddr, port, txid, data);
   elseif message_type == 'putrec' then
     local dirpath, filesInfo = ...;
-    cmd_putrec(timeoutFnPutRec, remoteAddr, port, txid, dirpath, filesInfo, false);
+    cmd_putrec(timeoutFnPutRec, remoteAddr, port, txid, dirpath, parse(filesInfo), false);
   elseif message_type == 'putrec_transfer' then
     local filepath, data = ...;
     cmd_putrec_transfer(timeoutFnPutRec, remoteAddr, port, txid, filepath, data);
