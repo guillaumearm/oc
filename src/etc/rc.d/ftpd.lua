@@ -295,7 +295,7 @@ local function cmd_putrec_transfer(timeoutFn, remoteAddr, port, txid, filepath, 
     local moveOk, moveTempFileErr = moveTempFile(tx);
 
     if moveOk and not moveTempFileErr then
-      logger.write('> file "' .. filepath .. '" transfered!');
+      logger.write('> directory "' .. tx.fullpath .. '" transfered!');
       modem.send(remoteAddr, port, 'tx_success', txid);
     else
       logger.write(tostring(moveTempFileErr));
