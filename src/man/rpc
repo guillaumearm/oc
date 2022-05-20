@@ -15,26 +15,35 @@ EXAMPLE SERVER
   -- on server
   local rpc = require('rpc');
   local component = require('component');
+  local event = require('event');
 
   component.modem.open(rpc.port); -- port is 3 by default
 
-  local _stopListen = rpc.listen('myChannel', function(obj)
+  local stopListen = rpc.listen('myChannel', function(obj)
     return {
       result = (obj.a or 0) + (obj.b or 0)
     }
   end);
 
-  EXAMPLE CLIENT
+  event.pull('interrupted');
+  stopListen();
+
+EXAMPLE CLIENT
   -- on client
   local rpc = require('rpc');
   local component = require('component');
+  local event = require('event');
 
   component.modem.open(rpc.port); -- port is 3 by default
 
   local errorCallback = function(err)
     print('Error: ' .. tostring(err));
+    computer.pushSignal('endcall');
   end
 
-  local _stopCall = rpc.call('myServer', 'myChannel', { a=34, b=30 }, function(payload)
+  local stopCall = rpc.call('myServer', 'myChannel', { a=34, b=30 }, function(payload)
     print(payload.result); -- 64
+    computer.pushSignal('endcall');
   end, errorCallback);
+
+  event.pull('endcall');
