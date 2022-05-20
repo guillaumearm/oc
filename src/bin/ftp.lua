@@ -320,7 +320,7 @@ local function ftp_putrec(hostname, localPath, targetPath, force)
     end
 
     -- transfer packets
-    local okTransfer, errTransfer = transferPackets(fileContent, remoteAddr, targetPath, txid, cmd, getFoundFailure);
+    local okTransfer, errTransfer = transferPackets(fileContent, remoteAddr, filePath, txid, cmd, getFoundFailure);
 
     if not okTransfer then
       event.cancel(eventId);
