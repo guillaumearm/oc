@@ -231,6 +231,8 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
     totalSize = totalSize + filesize;
 
     files[filepath] = {
+      id = txid,
+      force = force,
       dirpath = dirpath,
       filepath = filepath,
       fullpath = fullpath,
