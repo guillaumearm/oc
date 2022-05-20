@@ -208,8 +208,15 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
   local modem = getModem();
   local tx = rec_txs[txid];
 
+  local fulldirpath = fs.concat(FTP_ROOT, dirpath);
+
   if tx then
     modem.send(remoteAddr, port, 'tx_refused', txid, 'transaction id already exists!')
+    return;
+  end
+
+  if not force and fs.exists(fulldirpath) then
+    modem.send(remoteAddr, port, 'tx_refused', txid, 'directory "' .. fulldirpath .. '" already exists!');
     return;
   end
 
@@ -217,12 +224,7 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
   local totalSize = 0;
 
   for filepath, filesize in pairs(filesInfo) do
-    local fullpath = fs.concat(FTP_ROOT, dirpath, fs.canonical(filepath));
-
-    if not force and fs.exists(fullpath) then
-      modem.send(remoteAddr, port, 'tx_refused', txid, 'file "' .. filepath .. '" already exists!');
-      return;
-    end
+    local fullpath = fs.concat(fulldirpath, fs.canonical(filepath));
 
     if force then
       removeTmpFileFromTxId(txid);
@@ -241,6 +243,7 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
   end
 
   rec_txs[txid] = {
+    fullpath = fulldirpath,
     force = force, -- putrec/putforcerec
     id = txid,
     files = files,
