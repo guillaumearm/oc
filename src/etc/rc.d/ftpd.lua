@@ -72,11 +72,8 @@ local function cleanRecTransaction(txid)
   local tx = rec_txs[txid];
 
   if tx then
-    forEach(function(file)
-      removeFile(file.fullpath)
-    end, tx.files);
-
-    txs[txid] = nil;
+    removeFile(tx.tmpdirpath);
+    rec_txs[txid] = nil;
     return true;
   end
 
@@ -244,6 +241,7 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
 
   rec_txs[txid] = {
     fullpath = fulldirpath,
+    tmpdirpath = getTmpPath(txid),
     force = force, -- putrec/putforcerec
     id = txid,
     files = files,
