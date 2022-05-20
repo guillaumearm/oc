@@ -73,7 +73,7 @@ local function cleanRecTransaction(txid)
 
   if tx then
     forEach(function(file)
-      removeFile(file.path)
+      removeFile(file.fullpath)
     end, tx.files);
 
     txs[txid] = nil;
@@ -216,7 +216,7 @@ local function cmd_putrec(timeoutFn, remoteAddr, port, txid, dirpath, filesInfo,
   end
 
   if not force and fs.exists(fulldirpath) then
-    modem.send(remoteAddr, port, 'tx_refused', txid, 'directory "' .. fulldirpath .. '" already exists!');
+    modem.send(remoteAddr, port, 'tx_refused', txid, 'directory "' .. dirpath .. '" already exists!');
     return;
   end
 
