@@ -82,7 +82,7 @@ local function createScheduler()
     local sec = (ms or 0) / 1000;
 
     local eId;
-    eId = event.listen(sec, function(...)
+    eId = event.timer(sec, function(...)
       eventIds[eId] = nil;
       cb(...);
       checkSchedulerClosed();
