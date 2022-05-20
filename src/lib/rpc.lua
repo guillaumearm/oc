@@ -4,7 +4,7 @@ local event = require('event');
 local uuid = require('uuid');
 local dns = require('dns');
 
-local RPC_PORT = 3;
+local DEFAULT_RPC_PORT = 3;
 local DEFAULT_TIMEOUT = 3000;  -- in ms
 local DEFAULT_BUFFER_SIZE = 4096;
 
@@ -38,7 +38,7 @@ local function sendPackets(remoteAddr, port, bufferSize, data, channel, requestI
     data = rest;
 
     if #buf > 0 then
-      local ok, err = component.modem.send(remoteAddr, port, 'RPC_TRANSFER_' .. mode, channel, requestId, data);
+      local ok, err = component.modem.send(remoteAddr, port, 'RPC_TRANSFER_' .. mode, channel, requestId, buf);
       if not ok then
         return false, '> modem.send error: ' .. tostring(err);
       end
@@ -56,7 +56,7 @@ local createRPC = function(timeoutMs)
   local api = {};  -- public api
 
   api.timeout = getTimeout(timeoutMs);
-  api.port = RPC_PORT;
+  api.port = DEFAULT_RPC_PORT;
   api.buffer_size = DEFAULT_BUFFER_SIZE;
 
   ----------------------------------------------------------------
@@ -190,7 +190,7 @@ local createRPC = function(timeoutMs)
           if tx.remaining_size > 0 then
             resetTimeout();
           elseif tx.remaining_size == 0 then
-            callback(parse(data));
+            callback(parse(tx.data));
             cleanEvents();
           else
             errCallback('RPC_TRANSFER_RESPONSE error: bad buffer size!')
