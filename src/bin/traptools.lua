@@ -22,7 +22,8 @@ local PACKAGE_LIST = {
   "wd",
   "shedit",
   "dns",
-  "ftp"
+  "ftp",
+  "scheduler"
 }
 
 local DAEMONS_TO_ACTIVATE = {

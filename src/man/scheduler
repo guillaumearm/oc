@@ -1,0 +1,29 @@
+NAME
+  scheduler
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  An OpenOS library that allow to have better control on asynchronous events.
+
+API
+  scheduler.listen(msg, cb)
+  scheduler.setTimeout(cb, ms)
+  scheduler.close()
+  scheduler.wait()
+
+EXAMPLES
+  -- scheduler library usage:
+  local scheduler = require('scheduler')()
+
+  -- handle CTRL+C signals
+  scheduler.listen('interrupted', scheduler.close);
+  local _disposeHandler = scheduler.listen('modem_message', print);
+
+  local _disposeTimeout = scheduler.setTimeout(function()
+    scheduler.close();
+  end, 30000);
+
+  -- this will print modem_message for 30 seconds
+  scheduler.wait();
