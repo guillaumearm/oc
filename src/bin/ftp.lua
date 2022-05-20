@@ -35,7 +35,7 @@ local function getFullLocalPath(path)
 end
 
 local function getFullTargetPath(localPath, targetPath)
-  local fileName = fs.name(localPath);
+  local fileName = fs.name(localPath) or '';
 
   if isEmpty(targetPath) then
     targetPath = '';
