@@ -25,9 +25,11 @@ EXAMPLE SERVER
   end);
 
   EXAMPLE CLIENT
-
   -- on client
   local rpc = require('rpc');
+  local component = require('component');
+
+  component.modem.open(rpc.port); -- port is 3 by default
 
   local errorCallback = function(err)
     print('Error: ' .. tostring(err));
