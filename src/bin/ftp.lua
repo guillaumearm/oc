@@ -103,7 +103,7 @@ local function transferPackets(fileContent, remoteAddr, targetPath, txid, ftpCmd
   repeat
     if shouldBreak() then
       break
-      ; end
+    end
 
     local buf, rest = cut_string(fileContent, BUF_SIZE);
     fileContent = rest;

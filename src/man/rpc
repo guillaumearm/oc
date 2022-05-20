@@ -1,0 +1,38 @@
+NAME
+  rpc
+
+AUTHOR
+  trapcodien
+
+DESCRIPTION
+  a basic RPC library.
+
+API
+  rpc.listen(channel, cb): disposeFn
+  rpc.call(hostname, channel, data, cb): disposeFn
+
+EXAMPLE SERVER
+  -- on server
+  local rpc = require('rpc');
+  local component = require('component');
+
+  component.modem.open(rpc.port); -- port is 3 by default
+
+  local _stopListen = rpc.listen('myChannel', function(obj)
+    return {
+      result = (obj.a or 0) + (obj.b or 0)
+    }
+  end);
+
+  EXAMPLE CLIENT
+
+  -- on client
+  local rpc = require('rpc');
+
+  local errorCallback = function(err)
+    print('Error: ' .. tostring(err));
+  end
+
+  local _stopCall = rpc.call('myServer', 'myChannel', { a=34, b=30 }, function(payload)
+    print(payload.result); -- 64
+  end, errorCallback);

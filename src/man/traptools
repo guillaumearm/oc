@@ -27,6 +27,8 @@ AVAILABLE PACKAGES (the "*" means there is no manual entry for this package)
   gcomponents*
   dns
   ftp*
+  scheduler
+  rpc
 
 
 Uninstall
