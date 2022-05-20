@@ -97,7 +97,38 @@ end
 ----------------------------------------------------------------
 
 ----------------------------------------------------------------
--- sendPackets
+-- transferPackets
+----------------------------------------------------------------
+local function transferPackets(fileContent, remoteAddr, targetPath, txid, ftpCmd, shouldBreak)
+  repeat
+    if shouldBreak() then
+      break
+      ; end
+
+    local buf, rest = cut_string(fileContent, BUF_SIZE);
+    fileContent = rest;
+
+    if #buf > 0 then
+      local ok, err;
+      if ftpCmd == 'put_transfer' then
+        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, buf);
+      else -- otherwise it's a 'putrec_transfer' command
+        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, targetPath, buf);
+      end
+      if not ok then
+        return false, '> modem.send error: ' .. tostring(err);
+      end
+      os.sleep(0.05);
+    end
+  until (#fileContent == 0)
+
+  return true;
+end
+
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+-- sendPackets (usable by put only)
 --
 -- targetPath is not used when ftpCmd == 'put_transfer'
 ----------------------------------------------------------------
@@ -105,6 +136,7 @@ local function sendPackets(remoteAddr, targetPath, fileContent, txid, ftpCmd)
   local allSent = false;
 
   local found_failure;
+  local getFoundFailure = function() return found_failure; end
   local tx_success_received = false;
   local eventId;
   -- check for responses: tx_failure and tx_success
@@ -123,29 +155,14 @@ local function sendPackets(remoteAddr, targetPath, fileContent, txid, ftpCmd)
     end
   end);
 
-  -- send packets
-  local toSend = fileContent;
-  repeat
-    if found_failure then
-      break
-      ; end
+  -- transfer packets
+  local okTransfer, errTransfer = transferPackets(fileContent, remoteAddr, targetPath, txid, ftpCmd, getFoundFailure);
 
-    local buf, rest = cut_string(toSend, BUF_SIZE);
-    toSend = rest;
+  if not okTransfer then
+    event.cancel(eventId);
+    return false, tostring(errTransfer);
+  end
 
-    if #buf > 0 then
-      local ok, err;
-      if ftpCmd == 'put_transfer' then
-        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, buf);
-      else -- otherwise it's a 'putrec_transfer' command
-        ok, err = component.modem.send(remoteAddr, FTP_PORT, ftpCmd, txid, targetPath, buf);
-      end
-      if not ok then
-        return false, '> modem.send error: ' .. tostring(err);
-      end
-      os.sleep(0.05);
-    end
-  until (#toSend == 0)
   allSent = true;
 
   if found_failure then
@@ -267,28 +284,85 @@ local function ftp_putrec(hostname, localPath, targetPath, force)
     return false, tostring(txErr);
   end
 
-  -- 3. for each file to send: readFile then sendPackets
+  -- listen for server response
+  local allSent = false;
+
+  local found_failure;
+  local getFoundFailure = function() return found_failure; end
+  local tx_success_received = false;
+  local eventId;
+  -- check for responses: tx_failure and tx_success
+  eventId = event.listen('modem_message', function(_, _, targetAddr, port, _, msg_type, txid_response, err)
+    if port ~= FTP_PORT or targetAddr ~= remoteAddr and txid_response ~= txid then return; end
+
+    if allSent and msg_type == 'tx_success' then
+      computer.pushSignal('endtx', txid, msg_type);
+    elseif allSent and msg_type == 'tx_failure' then
+      computer.pushSignal('endtx', txid, msg_type, err);
+    elseif not allSent and msg_type == 'tx_success' then
+      tx_success_received = true;
+    elseif not allSent and msg_type == 'tx_failure' and isNotEmpty(err) then
+      found_failure = err;
+      event.cancel(eventId);
+    end
+  end);
+
+  -- 3. for each file to send: readFile then transferPackets
   for filePath in pairs(filesInfo) do
     local fullLocalPath = fs.concat(localPath, filePath);
 
     local fileContent, readErr = fse.readFile(fullLocalPath);
 
     if not fileContent or readErr then
+      event.cancel(eventId);
       component.modem.close(FTP_PORT);
       return false, tostring(readErr);
     end
 
     -- transfer packets
-    local ok, err = sendPackets(remoteAddr, filePath, fileContent, txid, 'putrec_transfer');
+    local okTransfer, errTransfer = transferPackets(fileContent, remoteAddr, targetPath, txid, cmd, getFoundFailure);
 
-    if err or not ok then
+    if not okTransfer then
+      event.cancel(eventId);
       component.modem.close(FTP_PORT);
-      return false, tostring(err);
+      return false, tostring(errTransfer);
     end
+
+
+    if found_failure then
+      event.cancel(eventId);
+      component.modem.close(FTP_PORT);
+      return false, 'Error: transaction failure: ' .. tostring(found_failure);
+    end
+
+    if tx_success_received then
+      event.cancel(eventId);
+      component.modem.close(FTP_PORT);
+      return true;
+    end
+
+  end
+  allSent = true;
+
+  -- TODO: cleanup + wait for endtx + check errors
+
+  local disposeTimeout = setTimeout(function()
+    computer.pushSignal('endtx', txid, 'tx_failure', 'no tx_success received (TIMEOUT)');
+  end, TIMEOUT);
+
+  local _, _, msg_type, err = event.pull('endtx', txid);
+
+
+  -- 5. cleanup
+  event.cancel(eventId);
+  component.modem.close(FTP_PORT);
+  disposeTimeout();
+
+  if msg_type == 'tx_success' then
+    return true;
   end
 
-  component.modem.close(FTP_PORT);
-  return true;
+  return false, 'Error: transaction failure: ' .. tostring(err);
 end
 
 ----------------------------------------------------------------
